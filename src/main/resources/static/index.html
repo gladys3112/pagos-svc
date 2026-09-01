@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio | Pagos</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: Inter, system-ui, sans-serif;
+            background: #f4f7fb;
+            color: #162033;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+        }
+        main {
+            width: min(720px, calc(100% - 48px));
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 18px 50px rgba(31, 56, 100, 0.12);
+            padding: 42px;
+        }
+        h1 { margin-top: 0; color: #2457d6; }
+        p { line-height: 1.6; }
+        nav { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+        a {
+            color: #ffffff;
+            background: #2457d6;
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+        }
+        code { background: #eef3ff; padding: 3px 7px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Microservicio de pagos</h1>
+    <p>API REST desarrollada con Spring Boot para registrar, listar y eliminar pagos.</p>
+    <p>La información se almacena temporalmente en una base de datos H2.</p>
+    <nav>
+        <a href="/swagger-ui/index.html">Abrir Swagger UI</a>
+        <a href="/h2-console">Abrir consola H2</a>
+        <a href="/api/pagos">Consultar pagos</a>
+    </nav>
+</main>
+</body>
+</html>

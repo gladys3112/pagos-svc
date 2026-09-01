@@ -1,0 +1,9 @@
+services:
+  pagos-svc:
+    build: .
+    container_name: pagos-svc
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+    restart: unless-stopped
