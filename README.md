@@ -1,6 +1,6 @@
 # pagos-svc
 
-Microservicio REST de pagos desarrollado con Spring Boot 3.3, Java 21, Maven, H2 y Docker. Este repositorio corresponde a la Evaluación Parcial N.° 1 de Ingeniería DevOps y prepara la base del pipeline que se utilizará durante el semestre.
+Microservicio REST de pagos desarrollado con Spring Boot 3.3, Java 21, Maven, H2 y Docker. Este repositorio corresponde a la Evaluación Parcial N.° 1 de Ingeniería DevOps e incluye ramificación GitFlow, documentación técnica y automatización con GitHub Actions.
 
 > Trabajo realizado de forma individual. Los pull requests se mantienen para simular el flujo colaborativo y dejar trazabilidad de cada cambio.
 
@@ -135,8 +135,6 @@ Aunque realicé el trabajo sola, decidí utilizar GitFlow porque me permitió ma
 | Feature 2 | `feature/changelog` | Archivo `CHANGELOG.md` | `docs: agregar changelog del microservicio pagos` |
 | Hotfix | `hotfix/titulo-pagina` | Corrección del elemento `<title>` | `fix(ui): corregir titulo de la pagina principal` |
 
-Los títulos y descripciones preparados para los pull requests están en [docs/TEXTOS_PULL_REQUEST.md](docs/TEXTOS_PULL_REQUEST.md).
-
 ## Convenciones y buenas prácticas
 
 ### Mensajes de commit
@@ -182,14 +180,13 @@ pagos-svc/
 │   ├── workflows/hola-mundo.yml
 │   └── pull_request_template.md
 ├── docs/
-│   ├── evidencias/README.md
-│   ├── TEXTOS_PULL_REQUEST.md
-│   └── TRAZABILIDAD.md
-├── scripts/
+│   ├── TRAZABILIDAD.md
+│   └── VALIDACION.md
 ├── src/
 │   ├── main/java/cl/duoc/pagos/
 │   ├── main/resources/
 │   └── test/java/cl/duoc/pagos/
+├── CHANGELOG.md
 ├── Dockerfile
 ├── docker-compose.yml
 ├── pom.xml
@@ -217,14 +214,12 @@ Referencia para la declaración y citación de IA: <https://bibliotecas.duoc.cl/
 
 Al principio me costó entender por qué era necesario utilizar varias ramas si estaba trabajando sola. Después comprendí que cada una cumple una función diferente y que sirven para organizar mejor el desarrollo. Lo que más aprendí fue que no conviene hacer todos los cambios directamente en `main`, porque un error podría afectar la versión estable del proyecto. Me ayudó a comprender mejor el funcionamiento de Git y GitHub. También aprendí que es importante realizar commits con mensajes claros, ya que permiten identificar fácilmente cada cambio y volver a una versión anterior si ocurre algún problema. Considero que lo aprendido me servirá en futuros proyectos, especialmente cuando tenga que trabajar con más personas.
 
-## Verificación final
+## Estado de la entrega
 
-- [ ] Repositorio publicado en GitHub.
-- [ ] Ramas `main`, `develop`, `feature/pagina-presentacion`, `feature/changelog` y `hotfix/titulo-pagina` visibles.
-- [ ] Dos pull requests de tipo feature fusionados hacia `develop`.
-- [ ] Un pull request de tipo hotfix fusionado hacia `main`.
-- [ ] Hotfix sincronizado desde `main` hacia `develop`.
-- [ ] Workflow visible y en verde en la pestaña Actions.
-- [ ] `mvn test` y `mvn verify` ejecutados sin errores.
-- [ ] Evidencias agregadas en `docs/evidencias/`.
-- [ ] Enlace del repositorio enviado por AVA y correo al docente.
+- [x] Repositorio publicado en GitHub.
+- [x] Ramas `main`, `develop`, `feature/pagina-presentacion`, `feature/changelog` y `hotfix/titulo-pagina` visibles.
+- [x] Dos pull requests de tipo feature fusionados hacia `develop`.
+- [x] Un pull request de tipo hotfix fusionado hacia `main`.
+- [x] Hotfix sincronizado desde `main` hacia `develop`.
+- [x] Workflow visible y en verde en la pestaña Actions.
+- [x] `mvn test` y `mvn verify` ejecutados sin errores.
