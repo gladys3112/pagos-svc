@@ -206,7 +206,7 @@ El workflow descarga el código, muestra información de la ejecución y verific
 
 ## Declaración de uso de inteligencia artificial
 
-Se utilizó ChatGPT como apoyo para estructurar archivos base del repositorio, revisar la redacción general no evaluativa, preparar comandos y comprobar la configuración técnica. La justificación de GitFlow y la reflexión personal fueron entregadas por la estudiante. Todo el contenido fue revisado antes de incorporarlo al repositorio.
+Se utilizó ChatGPT como apoyo en la revisión de redacción no evaluativa y en la orientación técnica del repositorio. La justificación y la reflexión personal fueron redactadas por la estudiante.
 
 Referencia para la declaración y citación de IA: <https://bibliotecas.duoc.cl/ia>.
 
