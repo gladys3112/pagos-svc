@@ -177,7 +177,7 @@ Como el trabajo fue realizado de forma individual, antes de fusionar cada pull r
 ```text
 pagos-svc/
 ├── .github/
-│   ├── workflows/hola-mundo.yml
+│   └── workflows/ci-cd.yml
 │   └── pull_request_template.md
 ├── docs/
 │   ├── TRAZABILIDAD.md
@@ -195,14 +195,17 @@ pagos-svc/
 
 No se versionan archivos generados, credenciales, variables privadas ni el directorio `target/`.
 
-## Automatización con GitHub Actions
+## Automatización CI/CD con GitHub Actions
 
-El workflow `Hola Mundo CI` se ejecuta automáticamente en los siguientes casos:
+El workflow `.github/workflows/ci-cd.yml` se ejecuta cuando hay un `push` a `main`, `develop`, ramas `feature/**` o `hotfix/**`, cuando se abre o actualiza un pull request dirigido a `main` o `develop`, y también manualmente desde la pestaña Actions.
 
-- Cada `push` realizado a `develop`.
-- Cada pull request cuyo destino sea `main`.
+El pipeline se divide en tres trabajos:
 
-El workflow descarga el código, muestra información de la ejecución y verifica el proyecto con Maven. Su función dentro de CI/CD es entregar una validación automática y repetible antes de integrar cambios, disminuyendo la posibilidad de incorporar una versión con errores.
+1. **Pruebas y cobertura:** configura Java 21, ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify` y publica el informe JaCoCo como artefacto.
+2. **Análisis de seguridad:** utiliza Trivy para analizar archivos y dependencias buscando vulnerabilidades altas o críticas sin solución disponible excluidas del bloqueo.
+3. **Construcción y despliegue simulado:** construye la imagen Docker, analiza la imagen con Trivy, levanta el servicio con Docker Compose, comprueba las respuestas HTTP de `/` y `/api/pagos`, guarda los logs y detiene el entorno al finalizar.
+
+El despliegue es temporal dentro del runner de GitHub Actions: no publica una aplicación permanente en AWS, Azure ni otro proveedor cloud. El resultado de cada ejecución debe comprobarse en la pestaña **Actions**; la existencia del workflow no implica que haya pasado.
 
 ## Declaración de uso de inteligencia artificial
 
@@ -221,5 +224,5 @@ Al principio me costó entender por qué era necesario utilizar varias ramas si 
 - [x] Dos pull requests de tipo feature fusionados hacia `develop`.
 - [x] Un pull request de tipo hotfix fusionado hacia `main`.
 - [x] Hotfix sincronizado desde `main` hacia `develop`.
-- [x] Workflow visible y en verde en la pestaña Actions.
-- [x] `mvn test` y `mvn verify` ejecutados sin errores.
+- [ ] Confirmar que la ejecución del workflow CI/CD de esta rama termina correctamente en la pestaña Actions.
+- [ ] Revisar los artefactos de JaCoCo y los logs del despliegue simulado de esa ejecución.
