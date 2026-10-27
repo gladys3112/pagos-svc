@@ -46,6 +46,9 @@ jobs:
     name: Verificación de configuración de dependencias
     runs-on: ubuntu-latest
     steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
       - name: Confirmar configuración de Dependabot
         run: test -f .github/dependabot.yml
 
