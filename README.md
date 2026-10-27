@@ -205,7 +205,7 @@ El pipeline se divide en tres trabajos:
 2. **Análisis de seguridad:** utiliza Trivy para analizar archivos y dependencias buscando vulnerabilidades altas o críticas sin solución disponible excluidas del bloqueo.
 3. **Construcción y despliegue simulado:** construye la imagen Docker, analiza la imagen con Trivy, levanta el servicio con Docker Compose, comprueba las respuestas HTTP de `/` y `/api/pagos`, guarda los logs y detiene el entorno al finalizar.
 
-El despliegue es temporal dentro del runner de GitHub Actions: no publica una aplicación permanente en AWS, Azure ni otro proveedor cloud. El resultado de cada ejecución debe comprobarse en la pestaña **Actions**; la existencia del workflow no implica que haya pasado.
+El despliegue es temporal dentro del runner de GitHub Actions: no publica una aplicación permanente en AWS, Azure ni otro proveedor cloud. La ejecución validada para esta rama terminó correctamente: pruebas/cobertura, análisis de dependencias con Trivy, construcción de imagen, escaneo de imagen y despliegue simulado. La evidencia está en [GitHub Actions run 40576250998](https://github.com/gladys3112/pagos-svc/actions/runs/40576250998).
 
 ## Declaración de uso de inteligencia artificial
 
@@ -224,5 +224,5 @@ Al principio me costó entender por qué era necesario utilizar varias ramas si 
 - [x] Dos pull requests de tipo feature fusionados hacia `develop`.
 - [x] Un pull request de tipo hotfix fusionado hacia `main`.
 - [x] Hotfix sincronizado desde `main` hacia `develop`.
-- [ ] Confirmar que la ejecución del workflow CI/CD de esta rama termina correctamente en la pestaña Actions.
-- [ ] Revisar los artefactos de JaCoCo y los logs del despliegue simulado de esa ejecución.
+- [x] Ejecución CI/CD completada correctamente en GitHub Actions (run `40576250998`, commit `3cc54f7f03ed9ba6262862b61c52d136115fa933`).
+- [x] Artefactos `informe-jacoco` y `evidencia-despliegue-3cc54f7f03ed9ba6262862b61c52d136115fa933` publicados en la ejecución.
