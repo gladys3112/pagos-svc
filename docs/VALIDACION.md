@@ -19,7 +19,7 @@ En GitHub → Settings → Secrets and variables → Actions, configurar:
 - Secreto `SNYK_TOKEN`
 - Variable `ENABLE_SNYK=true`
 
-El job SonarCloud se omite si faltan sus dos variables; si las variables existen pero el token no es válido o no tiene permisos, el job falla. Snyk se omite si `ENABLE_SNYK` no es exactamente `true`; al habilitarlo, también necesita un `SNYK_TOKEN` válido. No se debe declarar IE3 completamente validado hasta que ambos análisis se ejecuten y finalicen correctamente.
+El job SonarCloud se omite si faltan sus dos variables; si las variables existen pero el token no es válido o no tiene permisos, el job falla. Snyk se omite si `ENABLE_SNYK` no es exactamente `true`; al habilitarlo, también necesita un `SNYK_TOKEN` válido. No se debe declarar IE3 completamente validado hasta que Dependabot esté configurado y al menos uno de los análisis SonarCloud o Snyk termine correctamente; la pauta los plantea como alternativas.
 
 ## Resultados comprobados
 
@@ -33,13 +33,14 @@ Ejecución de referencia comprobada: [GitHub Actions #69](https://github.com/gla
 - **SonarCloud:** fallido. Tras desactivar la descarga automática del JRE, el scanner usó Java 21 del runner, pero recibió HTTP 403 al consultar `https://api.sonarcloud.io/analysis/engine`. La variable de organización y el project key se entregaron al job, y el secreto `SONAR_TOKEN` no estaba vacío. Los logs no permiten determinar si el token está vencido/revocado, carece de permiso **Execute Analysis** o si la organización/proyecto no coincide con el proyecto autorizado.
 - **Snyk:** omitido; el job está condicionado a `ENABLE_SNYK == 'true'` y esa condición no se cumplió.
 
-Estos resultados corresponden a la ejecución indicada, no a pruebas locales. No se debe declarar la evaluación completamente validada mientras SonarCloud falle y Snyk siga omitido si IE3 exige ambos análisis.
+Estos resultados corresponden a la ejecución indicada, no a pruebas locales. IE3 aún no tiene evidencia completa en esta ejecución: SonarCloud falló y Snyk se omitió. La pauta solicita SonarQube o Snyk (uno de los dos), además de Dependabot. El job actual solo confirma que existe `.github/dependabot.yml`; no verifica las alertas ni la creación de actualizaciones de Dependabot.
 
 ## Pendiente de configuración externa
 
 En GitHub → **Settings → Secrets and variables → Actions**:
 
-1. En SonarCloud, comprueba que el proyecto `gladys3112_pagos-svc` pertenece a la organización `gladys3112`, que el usuario/token tiene permiso **Execute Analysis** sobre ese proyecto y que el token no está revocado ni vencido. Después reemplaza el secreto `SONAR_TOKEN` por un token válido si hace falta. No copies el token a archivos ni a logs.
-2. Para ejecutar Snyk, configura el secreto `SNYK_TOKEN` y la variable `ENABLE_SNYK=true`.
+1. Para usar SonarCloud, comprueba que el proyecto `gladys3112_pagos-svc` pertenece a `gladys3112`, que el token tiene permiso **Execute Analysis** y que no está vencido ni revocado. Si hace falta, reemplaza `SONAR_TOKEN` en GitHub. No copies el token a archivos ni a logs.
+2. Como alternativa, para usar Snyk configura el secreto `SNYK_TOKEN` y la variable `ENABLE_SNYK=true`; la pauta no exige que SonarCloud y Snyk pasen ambos.
+3. Confirma en la configuración del repositorio que Dependabot esté habilitado y guarda evidencia de sus actualizaciones o alertas. El workflow actual solo comprueba la presencia del archivo de configuración.
 
 Después de ajustar la configuración, vuelve a ejecutar el workflow y verifica que ambos trabajos terminen correctamente. La opción `sonar.scanner.skipJreProvisioning=true` permite usar el Java 21 instalado en el runner; no corrige permisos de SonarCloud.
