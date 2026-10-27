@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-La validación del pipeline actualizado debe confirmarse en GitHub Actions para el commit más reciente de `feature/pipeline-cicd-evaluacion`. Un resultado verde de una ejecución anterior no demuestra que los nuevos trabajos hayan pasado.
+La validación se registra contra una ejecución concreta de GitHub Actions y su commit de `feature/pipeline-cicd-evaluacion`. Los resultados descritos abajo corresponden solo a esa ejecución; una nueva modificación del workflow requiere revisar su propio resultado.
 
 ## Criterios incorporados
 
@@ -23,7 +23,7 @@ El job SonarCloud se omite si faltan sus dos variables; si las variables existen
 
 ## Resultados comprobados
 
-Última ejecución revisada: [GitHub Actions #65](https://github.com/gladys3112/pagos-svc/actions/runs/40596146618), commit de la rama `feature/pipeline-cicd-evaluacion` `5d0a43934ae770ca5a2518900fe6ddb0c6360729` (PR #7 abierto; no fusionado).
+Ejecución de referencia comprobada: [GitHub Actions #69](https://github.com/gladys3112/pagos-svc/actions/runs/40597277886), commit de la rama `feature/pipeline-cicd-evaluacion` `c684c38a46552d0bb87394cdcf199aa8a671b361` (PR #7 abierto; no fusionado).
 
 - **Pruebas y cobertura:** correcto. Maven ejecutó 9 pruebas; 0 fallos, 0 errores y 0 omitidas. JaCoCo informó que se cumplieron todos los límites.
 - **Trivy (repositorio e imagen):** correcto, sin hallazgos bloqueantes según la configuración HIGH/CRITICAL y `--ignore-unfixed`.
