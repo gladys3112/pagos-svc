@@ -234,3 +234,8 @@ Al principio me costó entender por qué era necesario utilizar varias ramas si 
 - [x] Pipeline CI/CD completado correctamente en el commit `ba279a3a651772fd7f57e529db0f572b143c2306` (ejecución [40580984594](https://github.com/gladys3112/pagos-svc/actions/runs/40580984594)).
 - [x] Informe JaCoCo y evidencia de despliegue publicados como artefactos en la ejecución actual.
 - [ ] Ejecutar SonarCloud o Snyk con credenciales válidas para completar la evidencia del análisis estático/dependencias.
+
+
+## Ejecución del pipeline CI/CD
+
+El flujo definido en `.github/workflows/ci-cd.yml` se ejecuta automáticamente al publicar cambios en ramas `feature/**`, `hotfix/**`, `develop` o `main`, y al abrir o actualizar un pull request hacia `main` o `develop`. Incluye pruebas y cobertura, validación de Dependabot, análisis de vulnerabilidades con Trivy, construcción y escaneo de la imagen Docker y un despliegue temporal con pruebas de humo. El análisis SonarCloud se habilita al configurar las variables de repositorio `SONAR_ORGANIZATION` y `SONAR_PROJECT_KEY`, junto con el secreto `SONAR_TOKEN`.
