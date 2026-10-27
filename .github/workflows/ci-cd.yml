@@ -43,14 +43,24 @@ jobs:
           retention-days: 14
 
   dependabot:
-    name: Verificación de configuración de dependencias
+    name: Verificación de Dependabot
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: read
     steps:
       - name: Obtener código
         uses: actions/checkout@v4
 
       - name: Confirmar configuración de Dependabot
         run: test -f .github/dependabot.yml
+
+      - name: Consultar alertas de Dependabot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/dependabot/alerts?state=open&per_page=100" --jq '.[].number' > dependabot-alerts-open.txt
+          echo "Alertas abiertas consultadas: $(wc -l < dependabot-alerts-open.txt)"
 
   security:
     name: Análisis de seguridad con Trivy
@@ -121,9 +131,27 @@ jobs:
         with:
           args: --severity-threshold=high
 
+  analysis-gate:
+    name: Puerta de análisis IE3
+    if: always()
+    needs: [sonar-analysis, snyk-analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir un análisis estático exitoso
+        env:
+          SONAR_RESULT: ${{ needs.sonar-analysis.result }}
+          SNYK_RESULT: ${{ needs.snyk-analysis.result }}
+        run: |
+          if [ "$SONAR_RESULT" = "success" ] || [ "$SNYK_RESULT" = "success" ]; then
+            echo "Al menos uno de SonarCloud o Snyk terminó correctamente."
+          else
+            echo "No terminó correctamente ningún análisis requerido: SonarCloud=$SONAR_RESULT, Snyk=$SNYK_RESULT"
+            exit 1
+          fi
+
   build-and-scan:
     name: Construcción y análisis de imagen Docker
-    needs: [test, security]
+    needs: [test, security, dependabot, analysis-gate]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
