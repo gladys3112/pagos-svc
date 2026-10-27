@@ -1,6 +1,6 @@
 # pagos-svc
 
-Microservicio REST de pagos desarrollado con Spring Boot 3.5, Java 21, Maven, H2 y Docker. Este repositorio corresponde a la Evaluación Parcial N.° 1 de Ingeniería DevOps e incluye ramificación GitFlow, documentación técnica y automatización con GitHub Actions.
+Microservicio REST de pagos desarrollado con Spring Boot 4.0.9, Java 21, Maven, H2 y Docker. Este repositorio corresponde a la Evaluación Parcial N.° 1 de Ingeniería DevOps e incluye ramificación GitFlow, documentación técnica y automatización con GitHub Actions.
 
 > Trabajo realizado de forma individual. Los pull requests se mantienen para simular el flujo colaborativo y dejar trazabilidad de cada cambio.
 
@@ -19,7 +19,7 @@ Microservicio REST de pagos desarrollado con Spring Boot 3.5, Java 21, Maven, H2
 | Tecnología | Uso |
 | --- | --- |
 | Java 21 | Lenguaje del microservicio |
-| Spring Boot 3.5 | API REST y configuración de la aplicación |
+| Spring Boot 4.0.9 | API REST y configuración de la aplicación |
 | Spring Data JPA | Acceso a los datos |
 | H2 | Base de datos en memoria |
 | Springdoc OpenAPI | Documentación Swagger de la API |
