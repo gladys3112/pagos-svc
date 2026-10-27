@@ -237,7 +237,7 @@ Al principio me costó entender por qué era necesario utilizar varias ramas si 
 - [x] Dos pull requests de tipo feature fusionados hacia `develop`.
 - [x] Un pull request de tipo hotfix fusionado hacia `main`.
 - [x] Hotfix sincronizado desde `main` hacia `develop`.
-- [ ] Validación completa pendiente. En [Actions #103](https://github.com/gladys3112/pagos-svc/actions/runs/40602368855), Maven/JaCoCo y Trivy del repositorio pasaron; Dependabot Alerts devolvió HTTP 403 porque está deshabilitado, SonarCloud devolvió HTTP 403, Snyk se omitió y la puerta IE3 bloqueó construcción/despliegue.
+- [ ] Validación completa pendiente. En [Actions #109](https://github.com/gladys3112/pagos-svc/actions/runs/40603818745), Maven/JaCoCo y Trivy del repositorio pasaron; Dependabot Alerts devolvió HTTP 403 porque está deshabilitado, SonarCloud devolvió HTTP 403, Snyk se omitió y la puerta IE3 bloqueó construcción/despliegue.
 - [ ] Habilitar Dependabot Alerts y corregir SonarCloud o habilitar Snyk; luego volver a ejecutar y revisar construcción, escaneo de imagen y despliegue simulado.
 
 
