@@ -150,14 +150,14 @@ jobs:
             aquasec/trivy:0.67.2 image --scanners vuln --severity HIGH,CRITICAL \
             --ignore-unfixed --exit-code 1 pagos-svc:${{ github.sha }}
 
-      - name: Descargar imagen de PostgreSQL
-        run: docker pull postgres:17-alpine
+      - name: Construir imagen de PostgreSQL
+        run: docker buildx build --platform linux/amd64 --file db/Dockerfile --tag pagos-postgres:${{ github.sha }} --load .
 
-      - name: Analizar vulnerabilidades de la base de datos
+      - name: Analizar vulnerabilidades de la imagen PostgreSQL
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$HOME/.cache:/root/.cache" \
             aquasec/trivy:0.67.2 image --scanners vuln --severity HIGH,CRITICAL \
-            --ignore-unfixed --exit-code 1 postgres:17-alpine
+            --ignore-unfixed --exit-code 1 pagos-postgres:${{ github.sha }}
 
   deploy-simulated:
     name: Despliegue simulado y smoke tests
@@ -185,6 +185,7 @@ jobs:
       - name: Desplegar en entorno temporal con Docker Compose
         env:
           IMAGE_TAG: ${{ github.sha }}
+          DB_IMAGE_TAG: ${{ github.sha }}
           PORT: '8080'
           POSTGRES_DB: pagosdb
           POSTGRES_USER: pagos
@@ -220,6 +221,7 @@ jobs:
         if: always()
         env:
           IMAGE_TAG: ${{ github.sha }}
+          DB_IMAGE_TAG: ${{ github.sha }}
           PORT: '8080'
           POSTGRES_DB: pagosdb
           POSTGRES_USER: pagos
@@ -243,6 +245,7 @@ jobs:
         if: always()
         env:
           IMAGE_TAG: ${{ github.sha }}
+          DB_IMAGE_TAG: ${{ github.sha }}
           PORT: '8080'
           POSTGRES_DB: pagosdb
           POSTGRES_USER: pagos
