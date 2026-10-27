@@ -231,5 +231,6 @@ Al principio me costó entender por qué era necesario utilizar varias ramas si 
 - [x] Dos pull requests de tipo feature fusionados hacia `develop`.
 - [x] Un pull request de tipo hotfix fusionado hacia `main`.
 - [x] Hotfix sincronizado desde `main` hacia `develop`.
-- [x] Ejecución CI/CD completada correctamente en GitHub Actions (run `40576250998`, commit `3cc54f7f03ed9ba6262862b61c52d136115fa933`).
-- [x] Artefactos `informe-jacoco` y `evidencia-despliegue-3cc54f7f03ed9ba6262862b61c52d136115fa933` publicados en la ejecución.
+- [x] Pipeline CI/CD completado correctamente en el commit `ba279a3a651772fd7f57e529db0f572b143c2306` (ejecución [40580984594](https://github.com/gladys3112/pagos-svc/actions/runs/40580984594)).
+- [x] Informe JaCoCo y evidencia de despliegue publicados como artefactos en la ejecución actual.
+- [ ] Ejecutar SonarCloud o Snyk con credenciales válidas para completar la evidencia del análisis estático/dependencias.
