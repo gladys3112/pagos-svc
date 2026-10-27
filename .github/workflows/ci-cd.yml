@@ -150,6 +150,15 @@ jobs:
             aquasec/trivy:0.67.2 image --scanners vuln --severity HIGH,CRITICAL \
             --ignore-unfixed --exit-code 1 pagos-svc:${{ github.sha }}
 
+      - name: Descargar imagen de PostgreSQL
+        run: docker pull postgres:17-alpine
+
+      - name: Analizar vulnerabilidades de la base de datos
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$HOME/.cache:/root/.cache" \
+            aquasec/trivy:0.67.2 image --scanners vuln --severity HIGH,CRITICAL \
+            --ignore-unfixed --exit-code 1 postgres:17-alpine
+
   deploy-simulated:
     name: Despliegue simulado y smoke tests
     needs: [build-and-scan]
@@ -177,6 +186,9 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
           PORT: '8080'
+          POSTGRES_DB: pagosdb
+          POSTGRES_USER: pagos
+          POSTGRES_PASSWORD: pagos_ci
         run: |
           docker compose up -d
           echo "Esperando el healthcheck del contenedor..."
@@ -195,8 +207,13 @@ jobs:
             sleep 3
           done
           curl --fail --silent --show-error http://localhost:8080/ > /dev/null
-          curl --fail --silent --show-error http://localhost:8080/api/pagos
-          echo
+          created="$(curl --fail --silent --show-error -H 'Content-Type: application/json' \
+            -d '{"nombre":"Pago CI","orden":"CI-${GITHUB_SHA:0:7}","monto":1.00,"estado":"APROBADO"}' \
+            http://localhost:8080/api/pagos)"
+          echo "$created"
+          list="$(curl --fail --silent --show-error http://localhost:8080/api/pagos)"
+          echo "$list"
+          printf '%s' "$list" | grep -q '"nombre":"Pago CI"'
           echo "Despliegue simulado correcto para commit ${{ github.sha }}"
 
       - name: Guardar logs y estado del despliegue
@@ -204,6 +221,9 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
           PORT: '8080'
+          POSTGRES_DB: pagosdb
+          POSTGRES_USER: pagos
+          POSTGRES_PASSWORD: pagos_ci
         run: |
           docker compose ps > deployment-status.txt 2>&1 || true
           docker compose logs --no-color > deployment-logs.txt 2>&1 || true
@@ -224,4 +244,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
           PORT: '8080'
-        run: docker compose down --remove-orphans
+          POSTGRES_DB: pagosdb
+          POSTGRES_USER: pagos
+          POSTGRES_PASSWORD: pagos_ci
+        run: docker compose down --volumes --remove-orphans
