@@ -4,12 +4,14 @@
 
 El workflow `.github/workflows/ci-cd.yml` se ejecuta en push a `main`, `develop`, ramas `feature/**` y `hotfix/**`, al abrir pull requests hacia `main` o `develop`, y manualmente desde GitHub Actions.
 
-1. **Pruebas:** Java 21 y Maven ejecutan `./mvnw clean verify`; el build falla si fallan las pruebas o la regla de cobertura configurada en `pom.xml`. El informe JaCoCo se guarda como artefacto.
-2. **Seguridad:** Trivy analiza dependencias y sistema de archivos; bloquea el pipeline ante vulnerabilidades HIGH o CRITICAL conocidas que tengan corrección disponible.
-3. **Construcción:** Docker Buildx construye una imagen identificada por el SHA completo del commit.
-4. **Escaneo de imagen:** Trivy revisa las dependencias y paquetes de la imagen antes del despliegue.
-5. **Despliegue simulado:** Docker Compose levanta el contenedor en el runner de GitHub Actions. Se comprueba una respuesta HTTP y la API de pagos. Al terminar, el entorno se detiene.
-6. **Trazabilidad:** los logs del despliegue y el informe JaCoCo se conservan como artefactos de la ejecución durante 14 días.
+1. **Pruebas y cobertura:** Java 21 ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify`; JaCoCo verifica la cobertura y publica el informe como artefacto.
+2. **Dependabot:** el workflow confirma que existe `.github/dependabot.yml`; las alertas y actualizaciones de Dependabot se administran en GitHub.
+3. **Trivy para dependencias:** analiza el repositorio y bloquea vulnerabilidades HIGH/CRITICAL corregibles según `--ignore-unfixed`.
+4. **SonarCloud:** ejecuta el análisis si están configuradas las variables `SONAR_ORGANIZATION` y `SONAR_PROJECT_KEY`; requiere el secreto `SONAR_TOKEN`. Usa Java 21 del runner sin aprovisionar otro JRE.
+5. **Snyk:** ejecuta el análisis Maven solo si `ENABLE_SNYK=true`; requiere el secreto `SNYK_TOKEN`.
+6. **Construcción y seguridad de imagen:** Buildx construye la imagen con el SHA del commit y Trivy escanea sus vulnerabilidades antes del despliegue.
+7. **Despliegue simulado:** Docker Compose levanta el contenedor en el runner, espera el estado `healthy` y comprueba las rutas HTTP `/` y `/api/pagos`. Al terminar, el entorno temporal se detiene.
+8. **Trazabilidad:** se publican el informe JaCoCo y los logs/estado del despliegue como artefactos durante 14 días.
 
 ## Seguridad y recursos
 
