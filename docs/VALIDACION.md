@@ -6,7 +6,7 @@ Esta validación usa resultados de GitHub Actions. No se ejecutaron Maven ni Doc
 
 ## Evidencia más reciente
 
-Workflow [CI/CD #103](https://github.com/gladys3112/pagos-svc/actions/runs/40602368855), ejecutado sobre el commit `e7769b2085683502c5e73454847a630305b99acc` de `feature/pipeline-cicd-evaluacion`. PR [#7](https://github.com/gladys3112/pagos-svc/pull/7) permanece abierto y sin fusionar; `main` no fue modificado.
+Workflow [CI/CD #109](https://github.com/gladys3112/pagos-svc/actions/runs/40603818745), ejecutado sobre el commit `ee9e5fc394626dbd2363ca1e8dad17e7b891ecbc` de `feature/pipeline-cicd-evaluacion`. PR [#7](https://github.com/gladys3112/pagos-svc/pull/7) permanece abierto y sin fusionar; `main` no fue modificado.
 
 - **Maven y JaCoCo:** pasó `./mvnw --batch-mode --no-transfer-progress clean verify`; 9 pruebas, 0 fallos, 0 errores y 0 omitidas. Los umbrales configurados de JaCoCo se cumplieron.
 - **Trivy del repositorio:** pasó con severidad HIGH/CRITICAL y `--ignore-unfixed`.
@@ -16,7 +16,7 @@ Workflow [CI/CD #103](https://github.com/gladys3112/pagos-svc/actions/runs/40602
 - **Puerta IE3:** falló, correctamente, porque ningún análisis configurado terminó con éxito.
 - **Construcción/escaneo de imagen Docker y despliegue simulado:** omitidos por la puerta IE3; esta ejecución no los valida.
 
-Ejecución anterior [CI/CD #93](https://github.com/gladys3112/pagos-svc/actions/runs/40601508495), commit `b348fd832ad0327dbc13c125de4bfd773d85f27b): pruebas, cobertura, Trivy del repositorio y construcción/escaneo de la imagen propia `pagos-svc` pasaron. El escaneo adicional de la imagen oficial PostgreSQL falló al detectar 26 CVE de severidad alta/crítica en el binario upstream `gosu`; por dependencia de ese paso, el despliegue se omitió. La imagen oficial PostgreSQL se usa en Compose, pero no forma parte del escaneo de imagen propio que exige este workflow. No se deben interpretar los resultados de #93 como validación del despliegue actual.
+Ejecución anterior [CI/CD #93](https://github.com/gladys3112/pagos-svc/actions/runs/40601508495), commit `b348fd832ad0327dbc13c125de4bfd773d85f27b`): pruebas, cobertura, Trivy del repositorio y construcción/escaneo de la imagen propia `pagos-svc` pasaron. El escaneo adicional de la imagen oficial PostgreSQL falló al detectar 26 CVE de severidad alta/crítica en el binario upstream `gosu`; por dependencia de ese paso, el despliegue se omitió. La imagen oficial PostgreSQL se usa en Compose, pero no forma parte del escaneo de imagen propio que exige este workflow. No se deben interpretar los resultados de #93 como validación del despliegue actual.
 
 ## Configuración externa pendiente
 
@@ -31,7 +31,7 @@ Tras habilitar las alertas y resolver uno de los análisis, volver a ejecutar el
 ## Estado frente a la pauta
 
 - **IE1 — contenedores:** Dockerfile multi-stage, runtime Java 21 Alpine, usuario no root y healthcheck. La imagen propia se construyó y escaneó con éxito en #93; falta repetirlo en una ejecución posterior a la puerta IE3.
-- **IE2 — pruebas:** evidencia completa en #103; las pruebas y cobertura JaCoCo pasaron.
+- **IE2 — pruebas:** evidencia completa en #109; las pruebas y cobertura JaCoCo pasaron.
 - **IE3 — seguridad:** incompleto. Trivy del repositorio pasó, pero Dependabot Alerts está desactivado y SonarCloud falla; Snyk se omitió.
 - **IE4 — despliegue trazable:** workflow definido con Compose, SHA del commit, healthcheck, smoke test de creación/lectura y artefactos de estado/logs. El despliegue actual no se ejecutó porque la puerta IE3 falló.
 - **IE5 — orquestación:** Compose define la aplicación y PostgreSQL con dependencia por healthcheck, volumen persistente y límites de recursos. La ejecución runtime de esta configuración aún no quedó comprobada en una ejecución válida del workflow.
