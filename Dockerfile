@@ -1,12 +1,14 @@
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY pom.xml .
-RUN mvn -q -DskipTests dependency:go-offline
+COPY pom.xml ./
+RUN mvn -B -q -DskipTests dependency:go-offline
 COPY src ./src
-RUN mvn -q clean verify package
+RUN mvn -B -q clean verify package
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /app/target/pagos-svc-1.0.0.jar app.jar
+RUN groupadd --system spring && useradd --system --gid spring --home-dir /app spring
+COPY --from=build --chown=spring:spring /app/target/pagos-svc-1.0.0.jar /app/app.jar
+USER spring:spring
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
