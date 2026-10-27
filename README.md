@@ -199,13 +199,20 @@ No se versionan archivos generados, credenciales, variables privadas ni el direc
 
 El workflow `.github/workflows/ci-cd.yml` se ejecuta cuando hay un `push` a `main`, `develop`, ramas `feature/**` o `hotfix/**`, cuando se abre o actualiza un pull request dirigido a `main` o `develop`, y también manualmente desde la pestaña Actions.
 
-El pipeline se divide en tres trabajos:
+El pipeline se organiza en trabajos separados:
 
-1. **Pruebas y cobertura:** configura Java 21, ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify` y publica el informe JaCoCo como artefacto.
-2. **Análisis de seguridad:** utiliza Trivy para analizar archivos y dependencias buscando vulnerabilidades altas o críticas sin solución disponible excluidas del bloqueo.
-3. **Construcción y despliegue simulado:** construye la imagen Docker, analiza la imagen con Trivy, levanta el servicio con Docker Compose, comprueba las respuestas HTTP de `/` y `/api/pagos`, guarda los logs y detiene el entorno al finalizar.
+1. **Pruebas y cobertura:** ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify` y publica el informe JaCoCo.
+2. **Seguridad de dependencias:** analiza el repositorio con Trivy y bloquea vulnerabilidades HIGH/CRITICAL sin solución disponible excluidas del bloqueo.
+3. **SonarCloud (IE3):** análisis estático condicional cuando se configuran las variables `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` y el secreto `SONAR_TOKEN`.
+4. **Snyk (IE3):** análisis de dependencias condicional al establecer la variable `ENABLE_SNYK=true` y configurar el secreto `SNYK_TOKEN`.
+5. **Construcción y análisis de imagen:** construye la imagen Docker y escanea vulnerabilidades con Trivy.
+6. **Despliegue simulado (IE4/E4):** un job explícito levanta el servicio con Docker Compose, espera el estado `healthy`, ejecuta smoke tests HTTP en `/` y `/api/pagos`, publica logs/estado y limpia el entorno.
 
-El despliegue es temporal dentro del runner de GitHub Actions: no publica una aplicación permanente en AWS, Azure ni otro proveedor cloud. La ejecución validada para esta rama terminó correctamente: pruebas/cobertura, análisis de dependencias con Trivy, construcción de imagen, escaneo de imagen y despliegue simulado. La evidencia está en [GitHub Actions run 40576250998](https://github.com/gladys3112/pagos-svc/actions/runs/40576250998).
+### Configuración de análisis externos
+
+En GitHub, abre **Settings → Secrets and variables → Actions**. Agrega los secretos `SONAR_TOKEN` y `SNYK_TOKEN`; crea las variables `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` y `ENABLE_SNYK=true`. Si SonarCloud o Snyk no están configurados, esos trabajos se omiten deliberadamente; por lo tanto, para acreditar IE3 en la evaluación hay que configurarlos y comprobar que ambos trabajos se ejecuten correctamente.
+
+El despliegue del workflow es temporal en el runner de GitHub Actions; no es una publicación permanente en AWS, Azure ni otro proveedor cloud. Los resultados anteriores pertenecen a una versión previa del workflow y no sustituyen la validación del commit actual.
 
 ## Declaración de uso de inteligencia artificial
 
