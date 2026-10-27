@@ -1,13 +1,41 @@
 services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pagosdb}
+      POSTGRES_USER: ${POSTGRES_USER:-pagos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pagos_dev}
+    volumes:
+      - pagos-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 100
+
   pagos-svc:
     image: pagos-svc:${IMAGE_TAG:-local}
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "${PORT:-8080}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: default
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-pagosdb}
+      SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-pagos}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-pagos_dev}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_H2_CONSOLE_ENABLED: "false"
     restart: unless-stopped
     init: true
     security_opt:
@@ -20,3 +48,6 @@ services:
     mem_limit: 512m
     cpus: 1.0
     pids_limit: 200
+
+volumes:
+  pagos-data:
