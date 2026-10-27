@@ -1,9 +1,6 @@
 services:
   db:
-    image: pagos-postgres:${DB_IMAGE_TAG:-local}
-    build:
-      context: .
-      dockerfile: db/Dockerfile
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-pagosdb}
       POSTGRES_USER: ${POSTGRES_USER:-pagos}
