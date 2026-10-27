@@ -1,62 +1,35 @@
 # Validación técnica
 
-## Alcance y estado
+## Estado y alcance
 
-Este documento separa las comprobaciones funcionales previamente registradas para el microservicio de la validación del pipeline CI/CD actual.
+La validación del pipeline actualizado debe confirmarse en GitHub Actions para el commit más reciente de `feature/pipeline-cicd-evaluacion`. Un resultado verde de una ejecución anterior no demuestra que los nuevos trabajos hayan pasado.
 
-**Estado del pipeline:** validado mediante la ejecución real [40576250998](https://github.com/gladys3112/pagos-svc/actions/runs/40576250998), asociada al commit `3cc54f7f03ed9ba6262862b61c52d136115fa933`. Los tres trabajos terminaron correctamente.
+## Criterios incorporados
 
-## Pruebas automatizadas y funcionales previamente documentadas
+- **IE1 — Docker:** imagen multi-stage, runtime Alpine, usuario no privilegiado, `HEALTHCHECK`, tests omitidos de la compilación de la imagen final mediante `-Dmaven.test.skip=true`, `.dockerignore` y límites/endurecimiento de Compose.
+- **IE3 — análisis estático y dependencias:** trabajos SonarCloud y Snyk incorporados, condicionados a la configuración de secretos/variables del repositorio.
+- **IE4/E4 — despliegue:** job explícito `Despliegue simulado y smoke tests`, posterior a la construcción y al escaneo de la imagen. Comprueba healthcheck, HTTP y publica logs/estado como artefactos.
 
-La documentación previa de este proyecto registra una ejecución de:
+## Configuración requerida para IE3
 
-```bash
-./mvnw clean verify
-```
+En GitHub → Settings → Secrets and variables → Actions, configurar:
 
-Y los siguientes resultados declarados en esa validación anterior:
+- Secreto `SONAR_TOKEN`
+- Variables `SONAR_ORGANIZATION` y `SONAR_PROJECT_KEY`
+- Secreto `SNYK_TOKEN`
+- Variable `ENABLE_SNYK=true`
 
-- 9 pruebas ejecutadas.
-- 0 fallos, 0 errores y 0 pruebas omitidas.
-- Verificación de cobertura JaCoCo cumplida.
-- Construcción Maven finalizada correctamente.
+Si faltan estas configuraciones, los jobs de SonarCloud y Snyk se omiten. No se debe declarar IE3 completamente validado hasta que ambos análisis se ejecuten y finalicen correctamente.
 
-También se registraron las siguientes pruebas funcionales de la API:
+## Comprobaciones del pipeline
 
-| Prueba | Resultado registrado anteriormente |
-| --- | --- |
-| Abrir la página de presentación | HTTP 200 |
-| Abrir Swagger UI | HTTP 200 |
-| Listar pagos inicialmente | Respuesta `[]` |
-| Registrar un pago | Pago creado con id `1` |
-| Listar después de registrar | Pago presente en la respuesta |
-| Eliminar el pago | HTTP 204 |
-| Listar después de eliminar | Respuesta `[]` |
+El workflow debe terminar con éxito en el commit actual y mostrar estos trabajos:
 
-Estos resultados se conservan como evidencia histórica del proyecto; no se han vuelto a ejecutar como parte de esta actualización documental.
+1. Pruebas y cobertura.
+2. Análisis de seguridad con Trivy.
+3. Análisis estático SonarCloud (si configurado).
+4. Análisis de dependencias con Snyk (si habilitado).
+5. Construcción y análisis de imagen Docker.
+6. Despliegue simulado y smoke tests.
 
-## Pipeline CI/CD configurado
-
-El workflow `.github/workflows/ci-cd.yml` contempla:
-
-1. **Pruebas y cobertura:** Java 21, `./mvnw --batch-mode --no-transfer-progress clean verify` y publicación del informe JaCoCo.
-2. **Seguridad:** análisis de archivos/dependencias con Trivy para vulnerabilidades HIGH y CRITICAL.
-3. **Construcción:** creación de la imagen Docker del microservicio.
-4. **Seguridad de imagen:** análisis de la imagen construida con Trivy.
-5. **Despliegue simulado:** ejecución mediante Docker Compose, comprobación HTTP de `/` y `/api/pagos`, y recopilación de logs.
-6. **Limpieza:** detención del entorno temporal de Compose incluso si un paso anterior falla.
-
-El despliegue es una simulación temporal en el runner de GitHub Actions; no representa un despliegue permanente en un proveedor cloud.
-
-## Evidencia de validación CI/CD
-
-- [x] Los trabajos de pruebas/cobertura, análisis de seguridad y construcción/despliegue simulado finalizaron correctamente.
-- [x] Se publicó el artefacto `informe-jacoco`.
-- [x] Se publicó el artefacto `evidencia-despliegue-3cc54f7f03ed9ba6262862b61c52d136115fa933` con los logs del despliegue.
-- [x] El escaneo de dependencias y el escaneo de la imagen Docker con Trivy terminaron correctamente.
-
-**Alcance:** la validación confirma un despliegue temporal en el runner de GitHub Actions, no un despliegue cloud permanente. La revisión final del PR debe considerar además los requisitos concretos de la rúbrica de la asignatura.
-
-## Ramas y trazabilidad
-
-La rama de evaluación para el pipeline es `feature/pipeline-cicd-evaluacion`. Las ramas históricas y los resultados de otros workflows deben comprobarse en GitHub antes de utilizarlos como evidencia de esta validación.
+El job de despliegue levanta el servicio con Docker Compose, espera el estado `healthy`, consulta `/` y `/api/pagos`, guarda evidencias y detiene el entorno temporal. Esto acredita despliegue simulado dentro del runner, no una publicación permanente en cloud.
