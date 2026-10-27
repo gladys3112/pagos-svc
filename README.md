@@ -1,6 +1,6 @@
 # pagos-svc
 
-Microservicio REST de pagos desarrollado con Spring Boot 4.0.9, Java 21, Maven, H2 y Docker. Este repositorio corresponde a la Evaluación Parcial N.° 1 de Ingeniería DevOps e incluye ramificación GitFlow, documentación técnica y automatización con GitHub Actions.
+Microservicio REST de pagos desarrollado con Spring Boot 4.0.9, Java 21, Maven, H2 para ejecución directa y pruebas, PostgreSQL en Docker Compose y Docker. Este repositorio corresponde a la Evaluación Parcial N.° 1 de Ingeniería DevOps e incluye ramificación GitFlow, documentación técnica y automatización con GitHub Actions.
 
 > Trabajo realizado de forma individual. Los pull requests se mantienen para simular el flujo colaborativo y dejar trazabilidad de cada cambio.
 
@@ -10,7 +10,7 @@ Microservicio REST de pagos desarrollado con Spring Boot 4.0.9, Java 21, Maven, 
 - Listar los pagos registrados.
 - Eliminar un pago por su identificador.
 - Consultar y probar la API mediante Swagger UI.
-- Revisar la base de datos temporal mediante la consola H2.
+- Revisar la base de datos H2 en memoria mediante la consola H2 cuando el servicio se ejecuta directamente con Maven (no disponible en Compose).
 - Ejecutar pruebas automáticas y control de cobertura con JaCoCo.
 - Construir y ejecutar el servicio mediante Docker Compose.
 
@@ -21,14 +21,15 @@ Microservicio REST de pagos desarrollado con Spring Boot 4.0.9, Java 21, Maven, 
 | Java 21 | Lenguaje del microservicio |
 | Spring Boot 4.0.9 | API REST y configuración de la aplicación |
 | Spring Data JPA | Acceso a los datos |
-| H2 | Base de datos en memoria |
+| H2 | Base en memoria para ejecución directa y pruebas |
+| PostgreSQL | Persistencia del entorno Docker Compose |
 | Springdoc OpenAPI | Documentación Swagger de la API |
 | Maven | Dependencias, pruebas y construcción |
 | JaCoCo | Verificación de cobertura |
 | Docker | Empaquetado y ejecución del servicio |
 | GitHub Actions | Automatización del flujo CI/CD |
 | Dependabot | Actualización automática de dependencias Maven, Docker y GitHub Actions |
-| Trivy | Escaneo de vulnerabilidades del repositorio y la imagen |
+| Trivy | Escaneo de vulnerabilidades del repositorio y la imagen propia del servicio |
 | SonarCloud / Snyk | Análisis estático y de dependencias, al configurar sus credenciales |
 
 ## Ejecución local
@@ -68,7 +69,7 @@ Linux o macOS:
 | --- | --- |
 | Página de presentación | <http://localhost:8080> |
 | Swagger UI | <http://localhost:8080/swagger-ui/index.html> |
-| Consola H2 | <http://localhost:8080/h2-console> |
+| Consola H2 | <http://localhost:8080/h2-console> (solo ejecución directa con Maven; deshabilitada en Compose) |
 | API de pagos | <http://localhost:8080/api/pagos> |
 
 Datos para la consola H2:
@@ -202,7 +203,7 @@ No se versionan archivos generados, credenciales, variables privadas ni el direc
 
 El workflow `.github/workflows/ci-cd.yml` se ejecuta cuando hay un `push` a `main`, `develop`, ramas `feature/**` o `hotfix/**`, cuando se abre o actualiza un pull request dirigido a `main` o `develop`, y también manualmente desde la pestaña Actions.
 
-El pipeline se organiza en trabajos separados. Dependabot se configura en `.github/dependabot.yml` para revisar semanalmente dependencias Maven, Docker y GitHub Actions. Trivy bloquea hallazgos HIGH/CRITICAL según la configuración del escaneo. Los análisis SonarCloud y Snyk necesitan sus secretos y variables en GitHub para ejecutarse.
+El pipeline organiza pruebas, alertas reales de Dependabot, análisis estático y seguridad de imagen. Trivy bloquea hallazgos HIGH/CRITICAL. La puerta IE3 requiere que SonarCloud o Snyk termine correctamente y que Dependabot Alerts esté habilitado.
 
 
 
@@ -215,7 +216,7 @@ El pipeline se organiza en trabajos separados. Dependabot se configura en `.gith
 
 ### Configuración de análisis externos
 
-En GitHub, abre **Settings → Secrets and variables → Actions**. Agrega los secretos `SONAR_TOKEN` y `SNYK_TOKEN`; crea las variables `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` y `ENABLE_SNYK=true`. Si SonarCloud o Snyk no están configurados, esos trabajos se omiten deliberadamente; por lo tanto, para acreditar IE3 en la evaluación hay que configurarlos y comprobar que ambos trabajos se ejecuten correctamente.
+En **Settings → Code security and analysis**, habilita Dependabot Alerts y el dependency graph. En **Settings → Secrets and variables → Actions**, configura SonarCloud mediante `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` y `SONAR_TOKEN`; alternativamente, configura `SNYK_TOKEN` y `ENABLE_SNYK=true`. La puerta IE3 exige que al menos uno de esos análisis termine correctamente. No guardes tokens en el repositorio.
 
 El despliegue del workflow es temporal en el runner de GitHub Actions; no es una publicación permanente en AWS, Azure ni otro proveedor cloud. Los resultados anteriores pertenecen a una versión previa del workflow y no sustituyen la validación del commit actual.
 
@@ -236,9 +237,8 @@ Al principio me costó entender por qué era necesario utilizar varias ramas si 
 - [x] Dos pull requests de tipo feature fusionados hacia `develop`.
 - [x] Un pull request de tipo hotfix fusionado hacia `main`.
 - [x] Hotfix sincronizado desde `main` hacia `develop`.
-- [ ] Validación completa del pipeline pendiente: en [Actions #71](https://github.com/gladys3112/pagos-svc/actions/runs/40597648466), pruebas, JaCoCo, Trivy, Docker y despliegue simulado pasaron; SonarCloud falló con HTTP 403 y Snyk se omitió.
-- [x] Informe JaCoCo y evidencia del despliegue simulado publicados como artefactos en Actions #71.
-- [ ] Resolver la autorización de SonarCloud o ejecutar Snyk como alternativa, y confirmar la configuración/actividad de Dependabot.
+- [ ] Validación completa pendiente. En [Actions #103](https://github.com/gladys3112/pagos-svc/actions/runs/40602368855), Maven/JaCoCo y Trivy del repositorio pasaron; Dependabot Alerts devolvió HTTP 403 porque está deshabilitado, SonarCloud devolvió HTTP 403, Snyk se omitió y la puerta IE3 bloqueó construcción/despliegue.
+- [ ] Habilitar Dependabot Alerts y corregir SonarCloud o habilitar Snyk; luego volver a ejecutar y revisar construcción, escaneo de imagen y despliegue simulado.
 
 
 ## Ejecución del pipeline CI/CD
