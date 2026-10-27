@@ -2,29 +2,31 @@
 
 ## Flujo automatizado
 
-El workflow `.github/workflows/ci-cd.yml` se ejecuta en push a `main`, `develop`, ramas `feature/**` y `hotfix/**`, al abrir pull requests hacia `main` o `develop`, y manualmente desde GitHub Actions.
+El workflow `.github/workflows/ci-cd.yml` se ejecuta con push a `main`, `develop`, ramas `feature/**` y `hotfix/**`, pull requests hacia `main` o `develop`, y manualmente desde GitHub Actions.
 
-1. **Pruebas y cobertura:** Java 21 ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify`; JaCoCo verifica la cobertura y publica el informe como artefacto.
-2. **Dependabot:** el workflow confirma que existe `.github/dependabot.yml`; las alertas y actualizaciones de Dependabot se administran en GitHub.
-3. **Trivy para dependencias:** analiza el repositorio y bloquea vulnerabilidades HIGH/CRITICAL corregibles según `--ignore-unfixed`.
-4. **SonarCloud:** ejecuta el análisis si están configuradas las variables `SONAR_ORGANIZATION` y `SONAR_PROJECT_KEY`; requiere el secreto `SONAR_TOKEN`. Usa Java 21 del runner sin aprovisionar otro JRE.
-5. **Snyk:** ejecuta el análisis Maven solo si `ENABLE_SNYK=true`; requiere el secreto `SNYK_TOKEN`.
-6. **Construcción y seguridad de imagen:** Buildx construye la imagen con el SHA del commit y Trivy escanea sus vulnerabilidades antes del despliegue.
-7. **Despliegue simulado:** Docker Compose levanta el contenedor en el runner, espera el estado `healthy` y comprueba las rutas HTTP `/` y `/api/pagos`. Al terminar, el entorno temporal se detiene.
-8. **Trazabilidad:** se publican el informe JaCoCo y los logs/estado del despliegue como artefactos durante 14 días.
+1. **Pruebas y cobertura:** Java 21 ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify`. JaCoCo aplica umbrales y el informe se guarda como artefacto.
+2. **Dependabot:** comprueba `.github/dependabot.yml` y consulta las alertas reales de GitHub. Requiere Dependabot Alerts habilitado y permiso `security-events: read`.
+3. **Trivy del repositorio:** analiza dependencias/archivos y bloquea vulnerabilidades HIGH/CRITICAL corregibles.
+4. **Análisis estático/dependencias:** SonarCloud se ejecuta con `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` y el secreto `SONAR_TOKEN`. Snyk es la alternativa al habilitar `ENABLE_SNYK=true` y `SNYK_TOKEN`.
+5. **Puerta IE3:** al menos uno entre SonarCloud y Snyk debe finalizar correctamente. La construcción del servicio depende también de la verificación de Dependabot; un trabajo omitido no se considera aprobado.
+6. **Construcción y análisis de imagen:** Buildx crea `pagos-svc:<SHA>` y Trivy escanea la imagen con umbral HIGH/CRITICAL.
+7. **Despliegue simulado:** Docker Compose inicia PostgreSQL y el microservicio, espera el healthcheck y ejecuta una prueba HTTP y una operación de creación/lectura de pago. Publica el estado y los logs como artefactos por 14 días; luego detiene el entorno y elimina el volumen temporal.
+
+## Trazabilidad
+
+El SHA completo del commit se utiliza como etiqueta de imagen. El workflow publica los resultados Maven/JaCoCo y las evidencias del despliegue dentro de GitHub Actions. Este despliegue solo existe durante la ejecución del runner; no publica el servicio en AWS, Azure u otra nube.
 
 ## Seguridad y recursos
 
-- El workflow declara permisos mínimos de lectura del repositorio por defecto.
-- No necesita credenciales cloud ni secretos para el despliegue simulado.
-- Trivy funciona como control de seguridad que bloquea la entrega si detecta vulnerabilidades HIGH/CRITICAL corregibles.
-- Docker Compose establece límites de memoria y CPU para el servicio.
-- El contenedor se ejecuta con un usuario no privilegiado.
-- La etiqueta de imagen usa `${{ github.sha }}` para identificar el código probado y desplegado.
+- El workflow limita los permisos predeterminados de GitHub Actions a lectura del repositorio; el job Dependabot agrega `security-events: read` para consultar alertas.
+- Trivy hace fallar el pipeline ante vulnerabilidades HIGH/CRITICAL corregibles en el repositorio y en la imagen propia `pagos-svc`.
+- PostgreSQL utiliza la imagen oficial `postgres:17-alpine` como dependencia de Compose. El workflow no escanea esa imagen de terceros; el escaneo de imagen cubre el artefacto propio de la aplicación.
+- El contenedor de la aplicación corre como usuario no privilegiado, con filesystem de solo lectura, sin capabilities, `no-new-privileges`, límites de CPU/memoria/PIDs y un `tmpfs` temporal.
+- Compose espera que PostgreSQL esté saludable antes de iniciar la aplicación y conserva sus datos en un volumen nombrado durante ejecuciones locales.
 
-## Ejecutar localmente
+## Ejecución local
 
-Requisitos: Docker Engine/Desktop y Docker Compose v2.
+Requisitos: Docker Engine y Docker Compose v2.
 
 ```bash
 docker compose up --build -d
@@ -35,23 +37,17 @@ docker compose logs --follow
 docker compose down
 ```
 
-Para ejecutar pruebas localmente:
+En Compose la aplicación usa PostgreSQL. Al ejecutar el servicio directamente con Maven, se usa H2 en memoria por defecto; la consola H2 solo está disponible en esa ejecución directa y no en Compose.
 
-- Linux/macOS: `./mvnw --batch-mode clean verify`
-- Windows: `mvnw.cmd --batch-mode clean verify`
+Para ejecutar las pruebas:
 
-## Ejecutar y revisar en GitHub
+- Linux/macOS: `./mvnw --batch-mode --no-transfer-progress clean verify`
+- Windows: `mvnw.cmd --batch-mode --no-transfer-progress clean verify`
 
-1. Abre la pestaña **Actions** del repositorio.
-2. Selecciona **CI/CD - pagos-svc**.
-3. Ejecuta el workflow manualmente con **Run workflow**, o crea un push/pull request.
-4. Revisa los jobs **Pruebas y cobertura**, **Análisis de seguridad** y **Construcción y despliegue simulado**.
-5. Descarga los artefactos `informe-jacoco` y `evidencia-despliegue-<commit>`.
+## Configuración de GitHub
 
-## Alcance del entorno simulado
+En **Settings → Code security and analysis**, habilita Dependabot Alerts y el dependency graph. En **Settings → Secrets and variables → Actions**, configura los valores de SonarCloud o Snyk indicados arriba. No guardes credenciales en el repositorio.
 
-El despliegue se ejecuta en un runner temporal de GitHub Actions y no en una cuenta cloud pública. Esto demuestra automatización de despliegue en un entorno contenerizado simulado. Si la asignatura exige un proveedor específico (AWS/Azure), se debe adaptar el último job al servicio solicitado y configurar secretos protegidos en GitHub Environments.
+## Validación
 
-## Escalabilidad y orquestación
-
-Docker Compose coordina el servicio y aplica límites de recursos al contenedor. Para múltiples réplicas en un entorno real, se debe usar un orquestador compatible (por ejemplo Kubernetes) o Docker Swarm; la sección `deploy.replicas` de Compose no se considera escalado efectivo en el despliegue local normal.
+Los resultados reales, los bloqueos de configuración y la correspondencia con IE1–IE5 se mantienen en [VALIDACION.md](VALIDACION.md). No consideres completa la evaluación hasta que una ejecución del workflow pase Dependabot, una de las herramientas SonarCloud/Snyk, la construcción/escaneo Docker y el despliegue simulado.
