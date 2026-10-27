@@ -19,7 +19,7 @@ En GitHub → Settings → Secrets and variables → Actions, configurar:
 - Secreto `SNYK_TOKEN`
 - Variable `ENABLE_SNYK=true`
 
-Si faltan estas configuraciones, los jobs de SonarCloud y Snyk se omiten. No se debe declarar IE3 completamente validado hasta que ambos análisis se ejecuten y finalicen correctamente.
+El job SonarCloud se omite si faltan sus dos variables; si las variables existen pero el token no es válido o no tiene permisos, el job falla. Snyk se omite si `ENABLE_SNYK` no es exactamente `true`; al habilitarlo, también necesita un `SNYK_TOKEN` válido. No se debe declarar IE3 completamente validado hasta que ambos análisis se ejecuten y finalicen correctamente.
 
 ## Resultados comprobados
 
