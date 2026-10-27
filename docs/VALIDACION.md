@@ -21,15 +21,25 @@ En GitHub → Settings → Secrets and variables → Actions, configurar:
 
 Si faltan estas configuraciones, los jobs de SonarCloud y Snyk se omiten. No se debe declarar IE3 completamente validado hasta que ambos análisis se ejecuten y finalicen correctamente.
 
-## Comprobaciones del pipeline
+## Resultados comprobados
 
-El workflow debe terminar con éxito en el commit actual y mostrar estos trabajos:
+Última ejecución revisada: [GitHub Actions #61](https://github.com/gladys3112/pagos-svc/actions/runs/40594772498), commit de la rama `feature/pipeline-cicd-evaluacion` `5c0b6395e239c5691dcac144532e8a03f8c94c5c` (PR #7 abierto; no fusionado).
 
-1. Pruebas y cobertura.
-2. Análisis de seguridad con Trivy.
-3. Análisis estático SonarCloud (si configurado).
-4. Análisis de dependencias con Snyk (si habilitado).
-5. Construcción y análisis de imagen Docker.
-6. Despliegue simulado y smoke tests.
+- **Pruebas y cobertura:** correcto. Maven ejecutó 9 pruebas; 0 fallos, 0 errores y 0 omitidas. JaCoCo informó que se cumplieron todos los límites.
+- **Trivy (repositorio e imagen):** correcto, sin hallazgos bloqueantes según la configuración HIGH/CRITICAL y `--ignore-unfixed`.
+- **Dependabot:** correcto únicamente como comprobación de que existe `.github/dependabot.yml`; esto no representa un análisis de alertas de Dependabot.
+- **Construcción y escaneo Docker:** correctos en GitHub Actions.
+- **Despliegue simulado y smoke tests:** correctos. Compose esperó al estado `healthy` y comprobó HTTP en `/` y `/api/pagos`; el entorno temporal se limpió.
+- **SonarCloud:** fallido. Tras desactivar la descarga automática del JRE, el scanner usó Java 21 del runner, pero recibió HTTP 403 al consultar `https://api.sonarcloud.io/analysis/engine`. La variable de organización y el project key se entregaron al job, y el secreto `SONAR_TOKEN` no estaba vacío. Los logs no permiten determinar si el token está vencido/revocado, carece de permiso **Execute Analysis** o si la organización/proyecto no coincide con el proyecto autorizado.
+- **Snyk:** omitido; el job está condicionado a `ENABLE_SNYK == 'true'` y esa condición no se cumplió.
 
-El job de despliegue levanta el servicio con Docker Compose, espera el estado `healthy`, consulta `/` y `/api/pagos`, guarda evidencias y detiene el entorno temporal. Esto acredita despliegue simulado dentro del runner, no una publicación permanente en cloud.
+Estos resultados corresponden a la ejecución indicada, no a pruebas locales. No se debe declarar la evaluación completamente validada mientras SonarCloud falle y Snyk siga omitido si IE3 exige ambos análisis.
+
+## Pendiente de configuración externa
+
+En GitHub → **Settings → Secrets and variables → Actions**:
+
+1. En SonarCloud, comprueba que el proyecto `gladys3112_pagos-svc` pertenece a la organización `gladys3112`, que el usuario/token tiene permiso **Execute Analysis** sobre ese proyecto y que el token no está revocado ni vencido. Después reemplaza el secreto `SONAR_TOKEN` por un token válido si hace falta. No copies el token a archivos ni a logs.
+2. Para ejecutar Snyk, configura el secreto `SNYK_TOKEN` y la variable `ENABLE_SNYK=true`.
+
+Después de ajustar la configuración, vuelve a ejecutar el workflow y verifica que ambos trabajos terminen correctamente. La opción `sonar.scanner.skipJreProvisioning=true` permite usar el Java 21 instalado en el runner; no corrige permisos de SonarCloud.
