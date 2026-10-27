@@ -23,7 +23,7 @@ El job SonarCloud se omite si faltan sus dos variables; si las variables existen
 
 ## Resultados comprobados
 
-Última ejecución revisada: [GitHub Actions #61](https://github.com/gladys3112/pagos-svc/actions/runs/40594772498), commit de la rama `feature/pipeline-cicd-evaluacion` `5c0b6395e239c5691dcac144532e8a03f8c94c5c` (PR #7 abierto; no fusionado).
+Última ejecución revisada: [GitHub Actions #65](https://github.com/gladys3112/pagos-svc/actions/runs/40596146618), commit de la rama `feature/pipeline-cicd-evaluacion` `5d0a43934ae770ca5a2518900fe6ddb0c6360729` (PR #7 abierto; no fusionado).
 
 - **Pruebas y cobertura:** correcto. Maven ejecutó 9 pruebas; 0 fallos, 0 errores y 0 omitidas. JaCoCo informó que se cumplieron todos los límites.
 - **Trivy (repositorio e imagen):** correcto, sin hallazgos bloqueantes según la configuración HIGH/CRITICAL y `--ignore-unfixed`.
