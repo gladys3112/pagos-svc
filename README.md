@@ -26,7 +26,7 @@ Microservicio REST de pagos desarrollado con Spring Boot 4.0.9, Java 21, Maven, 
 | Maven | Dependencias, pruebas y construcción |
 | JaCoCo | Verificación de cobertura |
 | Docker | Empaquetado y ejecución del servicio |
-| GitHub Actions | Automatización del flujo CI |
+| GitHub Actions | Automatización del flujo CI/CD |\n| Dependabot | Actualización automática de dependencias Maven, Docker y GitHub Actions |\n| Trivy | Escaneo de vulnerabilidades del repositorio y la imagen |\n| SonarCloud / Snyk | Análisis estático y de dependencias, al configurar sus credenciales |
 
 ## Ejecución local
 
@@ -199,7 +199,7 @@ No se versionan archivos generados, credenciales, variables privadas ni el direc
 
 El workflow `.github/workflows/ci-cd.yml` se ejecuta cuando hay un `push` a `main`, `develop`, ramas `feature/**` o `hotfix/**`, cuando se abre o actualiza un pull request dirigido a `main` o `develop`, y también manualmente desde la pestaña Actions.
 
-El pipeline se organiza en trabajos separados:
+El pipeline se organiza en trabajos separados. Dependabot se configura en `.github/dependabot.yml` para revisar semanalmente dependencias Maven, Docker y GitHub Actions. Trivy bloquea hallazgos HIGH/CRITICAL según la configuración del escaneo. Los análisis SonarCloud y Snyk necesitan sus secretos y variables en GitHub para ejecutarse.\n\n
 
 1. **Pruebas y cobertura:** ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify` y publica el informe JaCoCo.
 2. **Seguridad de dependencias:** analiza el repositorio con Trivy y bloquea vulnerabilidades HIGH/CRITICAL sin solución disponible excluidas del bloqueo.
