@@ -26,7 +26,10 @@ Microservicio REST de pagos desarrollado con Spring Boot 4.0.9, Java 21, Maven, 
 | Maven | Dependencias, pruebas y construcción |
 | JaCoCo | Verificación de cobertura |
 | Docker | Empaquetado y ejecución del servicio |
-| GitHub Actions | Automatización del flujo CI/CD |\n| Dependabot | Actualización automática de dependencias Maven, Docker y GitHub Actions |\n| Trivy | Escaneo de vulnerabilidades del repositorio y la imagen |\n| SonarCloud / Snyk | Análisis estático y de dependencias, al configurar sus credenciales |
+| GitHub Actions | Automatización del flujo CI/CD |
+| Dependabot | Actualización automática de dependencias Maven, Docker y GitHub Actions |
+| Trivy | Escaneo de vulnerabilidades del repositorio y la imagen |
+| SonarCloud / Snyk | Análisis estático y de dependencias, al configurar sus credenciales |
 
 ## Ejecución local
 
@@ -199,7 +202,9 @@ No se versionan archivos generados, credenciales, variables privadas ni el direc
 
 El workflow `.github/workflows/ci-cd.yml` se ejecuta cuando hay un `push` a `main`, `develop`, ramas `feature/**` o `hotfix/**`, cuando se abre o actualiza un pull request dirigido a `main` o `develop`, y también manualmente desde la pestaña Actions.
 
-El pipeline se organiza en trabajos separados. Dependabot se configura en `.github/dependabot.yml` para revisar semanalmente dependencias Maven, Docker y GitHub Actions. Trivy bloquea hallazgos HIGH/CRITICAL según la configuración del escaneo. Los análisis SonarCloud y Snyk necesitan sus secretos y variables en GitHub para ejecutarse.\n\n
+El pipeline se organiza en trabajos separados. Dependabot se configura en `.github/dependabot.yml` para revisar semanalmente dependencias Maven, Docker y GitHub Actions. Trivy bloquea hallazgos HIGH/CRITICAL según la configuración del escaneo. Los análisis SonarCloud y Snyk necesitan sus secretos y variables en GitHub para ejecutarse.
+
+
 
 1. **Pruebas y cobertura:** ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify` y publica el informe JaCoCo.
 2. **Seguridad de dependencias:** analiza el repositorio con Trivy y bloquea vulnerabilidades HIGH/CRITICAL sin solución disponible excluidas del bloqueo.
@@ -216,7 +221,7 @@ El despliegue del workflow es temporal en el runner de GitHub Actions; no es una
 
 ## Declaración de uso de inteligencia artificial
 
-Se utilizó ChatGPT como apoyo en la revisión de redacción no evaluativa y en la orientación técnica del repositorio. La justificación y la reflexión personal fueron redactadas por la estudiante.
+Se utilizó ChatGPT para revisar el pipeline CI/CD y los resultados de GitHub Actions, analizar el error de SonarCloud, proponer y aplicar una configuración para usar el Java 21 del runner, contrastar el proyecto con la pauta y actualizar la documentación técnica. La estudiante debe revisar y validar esos cambios antes de entregar. ChatGPT no redactó ni modificó la reflexión personal ni la justificación personal.
 
 Referencia para la declaración y citación de IA: <https://bibliotecas.duoc.cl/ia>.
 
@@ -231,9 +236,9 @@ Al principio me costó entender por qué era necesario utilizar varias ramas si 
 - [x] Dos pull requests de tipo feature fusionados hacia `develop`.
 - [x] Un pull request de tipo hotfix fusionado hacia `main`.
 - [x] Hotfix sincronizado desde `main` hacia `develop`.
-- [x] Pipeline CI/CD completado correctamente en el commit `ba279a3a651772fd7f57e529db0f572b143c2306` (ejecución [40580984594](https://github.com/gladys3112/pagos-svc/actions/runs/40580984594)).
-- [x] Informe JaCoCo y evidencia de despliegue publicados como artefactos en la ejecución actual.
-- [ ] Ejecutar SonarCloud o Snyk con credenciales válidas para completar la evidencia del análisis estático/dependencias.
+- [ ] Validación completa del pipeline pendiente: en [Actions #71](https://github.com/gladys3112/pagos-svc/actions/runs/40597648466), pruebas, JaCoCo, Trivy, Docker y despliegue simulado pasaron; SonarCloud falló con HTTP 403 y Snyk se omitió.
+- [x] Informe JaCoCo y evidencia del despliegue simulado publicados como artefactos en Actions #71.
+- [ ] Resolver la autorización de SonarCloud o ejecutar Snyk como alternativa, y confirmar la configuración/actividad de Dependabot.
 
 
 ## Ejecución del pipeline CI/CD
