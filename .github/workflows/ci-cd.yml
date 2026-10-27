@@ -42,6 +42,13 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  dependabot:
+    name: Verificación de configuración de dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirmar configuración de Dependabot
+        run: test -f .github/dependabot.yml
+
   security:
     name: Análisis de seguridad con Trivy
     runs-on: ubuntu-latest
