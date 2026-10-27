@@ -4,7 +4,7 @@
 
 Este documento separa las comprobaciones funcionales previamente registradas para el microservicio de la validación del pipeline CI/CD actual.
 
-**Estado del pipeline:** pendiente de confirmar mediante una ejecución real en GitHub Actions. La presencia de los pasos en el archivo de workflow no demuestra que hayan finalizado correctamente.
+**Estado del pipeline:** validado mediante la ejecución real [40576250998](https://github.com/gladys3112/pagos-svc/actions/runs/40576250998), asociada al commit `3cc54f7f03ed9ba6262862b61c52d136115fa933`. Los tres trabajos terminaron correctamente.
 
 ## Pruebas automatizadas y funcionales previamente documentadas
 
@@ -48,13 +48,14 @@ El workflow `.github/workflows/ci-cd.yml` contempla:
 
 El despliegue es una simulación temporal en el runner de GitHub Actions; no representa un despliegue permanente en un proveedor cloud.
 
-## Comprobaciones pendientes
+## Evidencia de validación CI/CD
 
-- [ ] Revisar en la pestaña **Actions** que la ejecución disparada por el último cambio termine correctamente.
-- [ ] Confirmar que los trabajos de pruebas, seguridad y construcción/despliegue simulado hayan finalizado correctamente.
-- [ ] Revisar el artefacto `informe-jacoco`.
-- [ ] Revisar el artefacto de logs del despliegue simulado.
-- [ ] Si algún trabajo falla, inspeccionar sus logs y corregir el problema antes de presentar la entrega como validada.
+- [x] Los trabajos de pruebas/cobertura, análisis de seguridad y construcción/despliegue simulado finalizaron correctamente.
+- [x] Se publicó el artefacto `informe-jacoco`.
+- [x] Se publicó el artefacto `evidencia-despliegue-3cc54f7f03ed9ba6262862b61c52d136115fa933` con los logs del despliegue.
+- [x] El escaneo de dependencias y el escaneo de la imagen Docker con Trivy terminaron correctamente.
+
+**Alcance:** la validación confirma un despliegue temporal en el runner de GitHub Actions, no un despliegue cloud permanente. La revisión final del PR debe considerar además los requisitos concretos de la rúbrica de la asignatura.
 
 ## Ramas y trazabilidad
 
