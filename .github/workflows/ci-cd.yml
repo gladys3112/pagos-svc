@@ -54,15 +54,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Analizar dependencias y archivos con Trivy
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: os,library
-          severity: HIGH,CRITICAL
+        run: |
+          docker run --rm -v "$PWD:/work:ro" aquasec/trivy:0.67.2 fs \
+            --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 /work
 
   build-and-deploy-simulated:
     name: Construcción y despliegue simulado
@@ -88,14 +82,10 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Analizar vulnerabilidades de la imagen
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          image-ref: pagos-svc:${{ github.sha }}
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: os,library
-          severity: HIGH,CRITICAL
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$HOME/.cache:/root/.cache" \
+            aquasec/trivy:0.67.2 image --scanners vuln --severity HIGH,CRITICAL \
+            --ignore-unfixed --exit-code 1 pagos-svc:${{ github.sha }}
 
       - name: Desplegar en entorno cloud simulado con Docker Compose
         env:
