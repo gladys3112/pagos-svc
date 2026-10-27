@@ -9,6 +9,7 @@ RUN mvn -B -q -Dmaven.test.skip=true package
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 RUN apk add --no-cache wget \
+    && apk upgrade --no-cache \
     && addgroup -S spring \
     && adduser -S -G spring -h /app spring
 COPY --from=build --chown=spring:spring /app/target/pagos-svc-1.0.0.jar /app/app.jar
