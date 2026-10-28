@@ -152,6 +152,7 @@ jobs:
   build-and-scan:
     name: Construcción y análisis de imagen Docker
     needs: [test, security, dependabot, analysis-gate]
+    if: ${{ always() && needs.test.result == 'success' && needs.security.result == 'success' && needs.dependabot.result == 'success' && needs.analysis-gate.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
