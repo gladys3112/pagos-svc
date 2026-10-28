@@ -114,11 +114,7 @@ jobs:
           SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
           SONAR_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
-          report="$(curl --silent --show-error --fail-with-body \\
-            -H "Authorization: Bearer $SONAR_TOKEN" \\
-            --get "https://api.sonarcloud.io/sca/risk-reports" \\
-            --data-urlencode "component=$SONAR_PROJECT_KEY" \\
-            --data-urlencode "branch=$SONAR_BRANCH")" || { echo "No se pudo consultar informe SCA"; exit 1; }
+          report="$(curl --silent --show-error --fail-with-body -H "Authorization: Bearer $SONAR_TOKEN" --get "https://api.sonarcloud.io/sca/risk-reports" --data-urlencode "component=$SONAR_PROJECT_KEY" --data-urlencode "branch=$SONAR_BRANCH")" || { echo "No se pudo consultar informe SCA"; exit 1; }
           printf '%s' "$report" | jq -r '.[] | [(.riskSeverity // ""), (.riskType // ""), (.riskTitle // ""), (.packageUrl // ""), (.vulnerabilityId // ""), (.riskUrl // "")] | @tsv'
 
   snyk-analysis:
