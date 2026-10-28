@@ -1,6 +1,6 @@
 # pagos-svc
 
-Microservicio REST de pagos desarrollado con Spring Boot 3.3, Java 21, Maven, H2 y Docker. Este repositorio corresponde a la Evaluación Parcial N.° 1 de Ingeniería DevOps e incluye ramificación GitFlow, documentación técnica y automatización con GitHub Actions.
+Microservicio REST de pagos desarrollado con Spring Boot 4.0.9, Java 21, Maven, H2 para ejecución directa y pruebas, PostgreSQL en Docker Compose y Docker. Este repositorio corresponde a la Evaluación Parcial N.° 1 de Ingeniería DevOps e incluye ramificación GitFlow, documentación técnica y automatización con GitHub Actions.
 
 > Trabajo realizado de forma individual. Los pull requests se mantienen para simular el flujo colaborativo y dejar trazabilidad de cada cambio.
 
@@ -10,7 +10,7 @@ Microservicio REST de pagos desarrollado con Spring Boot 3.3, Java 21, Maven, H2
 - Listar los pagos registrados.
 - Eliminar un pago por su identificador.
 - Consultar y probar la API mediante Swagger UI.
-- Revisar la base de datos temporal mediante la consola H2.
+- Revisar la base de datos H2 en memoria mediante la consola H2 cuando el servicio se ejecuta directamente con Maven (no disponible en Compose).
 - Ejecutar pruebas automáticas y control de cobertura con JaCoCo.
 - Construir y ejecutar el servicio mediante Docker Compose.
 
@@ -19,14 +19,18 @@ Microservicio REST de pagos desarrollado con Spring Boot 3.3, Java 21, Maven, H2
 | Tecnología | Uso |
 | --- | --- |
 | Java 21 | Lenguaje del microservicio |
-| Spring Boot 3.3 | API REST y configuración de la aplicación |
+| Spring Boot 4.0.9 | API REST y configuración de la aplicación |
 | Spring Data JPA | Acceso a los datos |
-| H2 | Base de datos en memoria |
+| H2 | Base en memoria para ejecución directa y pruebas |
+| PostgreSQL | Persistencia del entorno Docker Compose |
 | Springdoc OpenAPI | Documentación Swagger de la API |
 | Maven | Dependencias, pruebas y construcción |
 | JaCoCo | Verificación de cobertura |
 | Docker | Empaquetado y ejecución del servicio |
-| GitHub Actions | Automatización del flujo CI |
+| GitHub Actions | Automatización del flujo CI/CD |
+| Dependabot | Actualización automática de dependencias Maven, Docker y GitHub Actions |
+| Trivy | Escaneo de vulnerabilidades del repositorio y la imagen propia del servicio |
+| SonarCloud / Snyk | Análisis estático y de dependencias, al configurar sus credenciales |
 
 ## Ejecución local
 
@@ -65,7 +69,7 @@ Linux o macOS:
 | --- | --- |
 | Página de presentación | <http://localhost:8080> |
 | Swagger UI | <http://localhost:8080/swagger-ui/index.html> |
-| Consola H2 | <http://localhost:8080/h2-console> |
+| Consola H2 | <http://localhost:8080/h2-console> (solo ejecución directa con Maven; deshabilitada en Compose) |
 | API de pagos | <http://localhost:8080/api/pagos> |
 
 Datos para la consola H2:
@@ -177,7 +181,7 @@ Como el trabajo fue realizado de forma individual, antes de fusionar cada pull r
 ```text
 pagos-svc/
 ├── .github/
-│   ├── workflows/hola-mundo.yml
+│   ├── workflows/ci-cd.yml
 │   └── pull_request_template.md
 ├── docs/
 │   ├── TRAZABILIDAD.md
@@ -195,18 +199,30 @@ pagos-svc/
 
 No se versionan archivos generados, credenciales, variables privadas ni el directorio `target/`.
 
-## Automatización con GitHub Actions
+## Automatización CI/CD con GitHub Actions
 
-El workflow `Hola Mundo CI` se ejecuta automáticamente en los siguientes casos:
+El workflow `.github/workflows/ci-cd.yml` se ejecuta cuando hay un `push` a `main`, `develop`, ramas `feature/**` o `hotfix/**`, cuando se abre o actualiza un pull request dirigido a `main` o `develop`, y también manualmente desde la pestaña Actions.
 
-- Cada `push` realizado a `develop`.
-- Cada pull request cuyo destino sea `main`.
+El pipeline organiza pruebas, alertas reales de Dependabot, análisis estático y seguridad de imagen. Trivy bloquea hallazgos HIGH/CRITICAL. La puerta IE3 requiere que SonarCloud o Snyk termine correctamente y que Dependabot Alerts esté habilitado.
 
-El workflow descarga el código, muestra información de la ejecución y verifica el proyecto con Maven. Su función dentro de CI/CD es entregar una validación automática y repetible antes de integrar cambios, disminuyendo la posibilidad de incorporar una versión con errores.
+
+
+1. **Pruebas y cobertura:** ejecuta `./mvnw --batch-mode --no-transfer-progress clean verify` y publica el informe JaCoCo.
+2. **Seguridad de dependencias:** analiza el repositorio con Trivy y bloquea vulnerabilidades HIGH/CRITICAL sin solución disponible excluidas del bloqueo.
+3. **SonarCloud (IE3):** análisis estático condicional cuando se configuran las variables `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` y el secreto `SONAR_TOKEN`.
+4. **Snyk (IE3):** análisis de dependencias condicional al establecer la variable `ENABLE_SNYK=true` y configurar el secreto `SNYK_TOKEN`.
+5. **Construcción y análisis de imagen:** construye la imagen Docker y escanea vulnerabilidades con Trivy.
+6. **Despliegue simulado (IE4/E4):** un job explícito levanta el servicio con Docker Compose, espera el estado `healthy`, ejecuta smoke tests HTTP en `/` y `/api/pagos`, publica logs/estado y limpia el entorno.
+
+### Configuración de análisis externos
+
+En **Settings → Code security and analysis**, habilita Dependabot Alerts y el dependency graph. En **Settings → Secrets and variables → Actions**, configura SonarCloud mediante `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` y `SONAR_TOKEN`; alternativamente, configura `SNYK_TOKEN` y `ENABLE_SNYK=true`. La puerta IE3 exige que al menos uno de esos análisis termine correctamente. No guardes tokens en el repositorio.
+
+El despliegue del workflow es temporal en el runner de GitHub Actions; no es una publicación permanente en AWS, Azure ni otro proveedor cloud. Los resultados anteriores pertenecen a una versión previa del workflow y no sustituyen la validación del commit actual.
 
 ## Declaración de uso de inteligencia artificial
 
-Se utilizó ChatGPT como apoyo en la revisión de redacción no evaluativa y en la orientación técnica del repositorio. La justificación y la reflexión personal fueron redactadas por la estudiante.
+Se utilizó ChatGPT para revisar el pipeline CI/CD y los resultados de GitHub Actions, analizar el error de SonarCloud, proponer y aplicar una configuración para usar el Java 21 del runner, contrastar el proyecto con la pauta y actualizar la documentación técnica. La estudiante debe revisar y validar esos cambios antes de entregar. ChatGPT no redactó ni modificó la reflexión personal ni la justificación personal.
 
 Referencia para la declaración y citación de IA: <https://bibliotecas.duoc.cl/ia>.
 
@@ -221,5 +237,10 @@ Al principio me costó entender por qué era necesario utilizar varias ramas si 
 - [x] Dos pull requests de tipo feature fusionados hacia `develop`.
 - [x] Un pull request de tipo hotfix fusionado hacia `main`.
 - [x] Hotfix sincronizado desde `main` hacia `develop`.
-- [x] Workflow visible y en verde en la pestaña Actions.
-- [x] `mvn test` y `mvn verify` ejecutados sin errores.
+- [ ] Validación completa pendiente. En [Actions #115](https://github.com/gladys3112/pagos-svc/actions/runs/40607377949), Maven/JaCoCo, Trivy del repositorio y consulta de Dependabot (0 alertas abiertas) pasaron; SonarCloud devolvió HTTP 403, Snyk se omitió y la puerta IE3 bloqueó construcción/despliegue.
+- [ ] Habilitar Dependabot Alerts y corregir SonarCloud o habilitar Snyk; luego volver a ejecutar y revisar construcción, escaneo de imagen y despliegue simulado.
+
+
+## Ejecución del pipeline CI/CD
+
+El flujo definido en `.github/workflows/ci-cd.yml` se ejecuta automáticamente al publicar cambios en ramas `feature/**`, `hotfix/**`, `develop` o `main`, y al abrir o actualizar un pull request hacia `main` o `develop`. Incluye pruebas y cobertura, validación de Dependabot, análisis de vulnerabilidades con Trivy, construcción y escaneo de la imagen Docker y un despliegue temporal con pruebas de humo. El análisis SonarCloud se habilita al configurar las variables de repositorio `SONAR_ORGANIZATION` y `SONAR_PROJECT_KEY`, junto con el secreto `SONAR_TOKEN`.
