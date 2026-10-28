@@ -2,38 +2,38 @@
 
 ## Alcance
 
-Esta validación usa resultados de GitHub Actions. No se ejecutaron Maven ni Docker localmente en este entorno. El despliegue descrito es temporal y simulado dentro del runner de GitHub Actions; no publica el servicio en una nube.
+La evidencia de esta página proviene de GitHub Actions. No se ejecutaron Maven ni Docker localmente en este entorno. El despliegue definido por el workflow es temporal y simulado dentro del runner de GitHub Actions; no publica el servicio en una nube.
 
 ## Evidencia más reciente
 
-Workflow [CI/CD #115](https://github.com/gladys3112/pagos-svc/actions/runs/40607377949), ejecutado sobre el commit `04aed2da2d6a505c999d7d67e1a4be657e4dd017` de `feature/pipeline-cicd-evaluacion`. PR [#7](https://github.com/gladys3112/pagos-svc/pull/7) permanece abierto y sin fusionar; `main` no fue modificado.
+Workflow [CI/CD #119](https://github.com/gladys3112/pagos-svc/actions/runs/40607576551), asociado al PR [#7](https://github.com/gladys3112/pagos-svc/pull/7), desde `feature/pipeline-cicd-evaluacion` hacia `main`. El PR permanece abierto y sin fusionar; no se modificó `main`.
 
-- **Maven y JaCoCo:** pasó `./mvnw --batch-mode --no-transfer-progress clean verify`; 9 pruebas, 0 fallos, 0 errores y 0 omitidas. Los umbrales configurados de JaCoCo se cumplieron.
+En el reintento realizado después de cambiar la configuración de análisis en SonarCloud:
+
+- **Maven y JaCoCo:** pasó `./mvnw --batch-mode --no-transfer-progress clean verify`; 9 pruebas, 0 fallos, 0 errores y 0 omitidas. Se cumplieron los umbrales configurados de JaCoCo.
 - **Trivy del repositorio:** pasó con severidad HIGH/CRITICAL y `--ignore-unfixed`.
-- **Dependabot:** pasó la consulta real de alertas después de habilitar Dependabot Alerts y conceder el permiso `vulnerability-alerts: read` al job. La consulta comprobó 0 alertas abiertas.
-- **SonarCloud:** falló con HTTP 403 al solicitar `https://api.sonarcloud.io/analysis/engine`. El secreto `SONAR_TOKEN` está presente, pero eso no demuestra que el token tenga permiso **Execute Analysis** ni que corresponda a la organización/proyecto configurados.
-- **Snyk:** omitido porque `ENABLE_SNYK` no es exactamente `true`.
-- **Puerta IE3:** falló, correctamente, porque ningún análisis configurado terminó con éxito.
-- **Construcción/escaneo de imagen Docker y despliegue simulado:** omitidos por la puerta IE3; esta ejecución no los valida.
+- **Dependabot:** pasó la consulta real de alertas. La comprobación anterior registró 0 alertas abiertas.
+- **SonarCloud:** pasó después de desactivar Automatic Analysis en el proyecto SonarCloud y ejecutar el análisis desde GitHub Actions.
+- **Puerta IE3:** pasó al completarse SonarCloud con éxito.
+- **Snyk:** omitido; la variable `ENABLE_SNYK` no está configurada como `true`. No es necesario para satisfacer la puerta actual porque SonarCloud pasó.
+- **Construcción/escaneo de imagen Docker y despliegue simulado:** quedaron omitidos en este reintento. GitHub reintentó los trabajos que habían fallado y no reejecutó automáticamente toda la cadena dependiente. Por tanto, esta ejecución no valida esos criterios.
 
-Ejecución anterior [CI/CD #93](https://github.com/gladys3112/pagos-svc/actions/runs/40601508495), commit `b348fd832ad0327dbc13c125de4bfd773d85f27b`): pruebas, cobertura, Trivy del repositorio y construcción/escaneo de la imagen propia `pagos-svc` pasaron. El escaneo adicional de la imagen oficial PostgreSQL falló al detectar 26 CVE de severidad alta/crítica en el binario upstream `gosu`; por dependencia de ese paso, el despliegue se omitió. La imagen oficial PostgreSQL se usa en Compose, pero no forma parte del escaneo de imagen propio que exige este workflow. No se deben interpretar los resultados de #93 como validación del despliegue actual.
+La ejecución [CI/CD #93](https://github.com/gladys3112/pagos-svc/actions/runs/40601508495), en otro commit, validó la construcción y el escaneo de la imagen propia `pagos-svc`. No valida el despliegue Compose del commit actual. En esa ejecución histórica, un escaneo adicional de la imagen oficial PostgreSQL detectó 26 CVE upstream de severidad alta/crítica y el despliegue fue omitido. La imagen PostgreSQL se usa en Compose, pero no forma parte del escaneo de imagen propio definido en el workflow actual.
 
-## Configuración externa pendiente
+## Configuración externa
 
-En GitHub → **Settings → Code security and analysis**:
+- **SonarCloud:** el proyecto usa análisis desde CI. Automatic Analysis debe permanecer desactivado para evitar el conflicto con el scanner de GitHub Actions.
+- **GitHub Actions:** el secreto `SONAR_TOKEN` está configurado a nivel de repositorio. Las variables `SONAR_ORGANIZATION` y `SONAR_PROJECT_KEY` están siendo leídas correctamente por el workflow.
+- **Snyk:** opcional en la configuración actual. Para activarlo, se requiere `ENABLE_SNYK=true` y el secreto `SNYK_TOKEN`.
 
-1. Dependabot Alerts quedó habilitado y la consulta de la API terminó correctamente en #115 (0 alertas abiertas).
-2. En **Settings → Secrets and variables → Actions**, corregir la autorización de SonarCloud: revisar `SONAR_ORGANIZATION`, `SONAR_PROJECT_KEY` y reemplazar `SONAR_TOKEN` por un token vigente con permiso **Execute Analysis** para ese proyecto. No copiar el token a archivos ni logs.
-3. Como alternativa al análisis de SonarCloud, configurar el secreto `SNYK_TOKEN` y la variable `ENABLE_SNYK=true`. La pauta pide SonarQube o Snyk; el workflow exige que al menos uno pase.
-
-Tras corregir la autorización de SonarCloud o habilitar Snyk, volver a ejecutar el workflow. Solo una nueva ejecución que pase la puerta IE3, construya y escanee la imagen del servicio y complete los smoke tests de Compose permitirá validar los criterios IE3 e IE4 para el commit actual.
+Se requiere una ejecución nueva completa para validar la construcción/escaneo de la imagen y los smoke tests de Compose después de que la puerta IE3 pase.
 
 ## Estado frente a la pauta
 
-- **IE1 — contenedores:** Dockerfile multi-stage, runtime Java 21 Alpine, usuario no root y healthcheck. La imagen propia se construyó y escaneó con éxito en #93; falta repetirlo en una ejecución posterior a la puerta IE3.
-- **IE2 — pruebas:** evidencia completa en #109; las pruebas y cobertura JaCoCo pasaron.
-- **IE3 — seguridad:** incompleto. Trivy del repositorio y Dependabot pasaron; SonarCloud falla con HTTP 403 y Snyk se omitió.
-- **IE4 — despliegue trazable:** workflow definido con Compose, SHA del commit, healthcheck, smoke test de creación/lectura y artefactos de estado/logs. El despliegue actual no se ejecutó porque la puerta IE3 falló.
-- **IE5 — orquestación:** Compose define la aplicación y PostgreSQL con dependencia por healthcheck, volumen persistente y límites de recursos. La ejecución runtime de esta configuración aún no quedó comprobada en una ejecución válida del workflow.
+- **IE1 — contenedores:** Dockerfile multi-stage, runtime Java 21 Alpine, usuario no root y healthcheck. La imagen propia se construyó y escaneó con éxito en #93; falta repetirlo en una ejecución actual posterior a la puerta IE3.
+- **IE2 — pruebas:** validado en #119; 9 pruebas y cobertura JaCoCo pasaron.
+- **IE3 — seguridad:** SonarCloud, Trivy del repositorio, Dependabot y la puerta de análisis pasaron en #119. Snyk se omitió.
+- **IE4 — despliegue trazable:** el workflow define Compose, SHA del commit, healthcheck, smoke test de creación/lectura y artefactos de estado/logs. Aún falta una ejecución completa que demuestre el despliegue en el commit actual.
+- **IE5 — orquestación:** Compose define la aplicación y PostgreSQL con dependencia por healthcheck, volumen persistente y límites de recursos. La ejecución runtime de esta configuración aún debe comprobarse.
 
-No se puede afirmar una validación completa ni asegurar el puntaje máximo mientras las tareas externas estén pendientes y no exista evidencia de imagen y despliegue en la ejecución actual.
+No se afirma una validación completa hasta que una ejecución completa pase la construcción/escaneo de imagen y el despliegue simulado.
