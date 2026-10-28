@@ -8,7 +8,7 @@ La rama validada es `feature/pipeline-cicd-evaluacion`. El PR [#7](https://githu
 
 ## Ejecución completa más reciente
 
-[CI/CD #137](https://github.com/gladys3112/pagos-svc/actions/runs/40613985899), commit `7dff43815306898dadab2762895a1f501831c256).
+[CI/CD #137](https://github.com/gladys3112/pagos-svc/actions/runs/40613985899), commit `7dff43815306898dadab2762895a1f501831c256`.
 
 | Comprobación | Resultado observado |
 | --- | --- |
