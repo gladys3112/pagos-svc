@@ -104,6 +104,7 @@ jobs:
           ./mvnw --batch-mode --no-transfer-progress verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.scanner.skipJreProvisioning=true \
+            -Dsonar.qualitygate.wait=true \
             -Dsonar.organization="$SONAR_ORGANIZATION" \
             -Dsonar.projectKey="$SONAR_PROJECT_KEY"
 
