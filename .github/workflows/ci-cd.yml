@@ -108,27 +108,6 @@ jobs:
             -Dsonar.organization="$SONAR_ORGANIZATION" \
             -Dsonar.projectKey="$SONAR_PROJECT_KEY"
 
-      - name: Consultar vulnerabilidades de SonarCloud en código nuevo
-        if: always()
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
-          SONAR_PULL_REQUEST: ${{ github.event.pull_request.number }}
-        run: |
-          if [ -z "$SONAR_TOKEN" ] || [ -z "$SONAR_PROJECT_KEY" ] || [ -z "$SONAR_PULL_REQUEST" ]; then
-            echo "No hay contexto suficiente para consultar los hallazgos del pull request."
-            exit 0
-          fi
-          curl --fail --silent --show-error --user "$SONAR_TOKEN:" --get \
-            --data-urlencode "componentKeys=$SONAR_PROJECT_KEY" \
-            --data-urlencode "pullRequest=$SONAR_PULL_REQUEST" \
-            --data-urlencode "sinceLeakPeriod=true" \
-            --data-urlencode "types=VULNERABILITY" \
-            --data-urlencode "resolved=false" \
-            --data-urlencode "ps=100" \
-            https://sonarcloud.io/api/issues/search |
-            jq -r 'if (.issues | length) == 0 then "No se encontraron vulnerabilidades abiertas en código nuevo." else .issues[] | [.severity, .component, (.line // "-"), .rule, .message] | @tsv end'
-
   snyk-analysis:
     name: Análisis de dependencias con Snyk
     if: ${{ vars.ENABLE_SNYK == 'true' }}
