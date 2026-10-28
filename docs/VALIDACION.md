@@ -8,7 +8,7 @@ La rama validada es `feature/pipeline-cicd-evaluacion`. El PR [#7](https://githu
 
 ## Ejecución completa más reciente
 
-[CI/CD #137](https://github.com/gladys3112/pagos-svc/actions/runs/40613985899), commit `7dff43815306898dadab2762895a1f501831c256`.
+[CI/CD #146](https://github.com/gladys3112/pagos-svc/actions/runs/40616790131), commit `44f072be78eb2e7f8a721b442afa301551a20f38`.
 
 | Comprobación | Resultado observado |
 | --- | --- |
@@ -21,7 +21,7 @@ La rama validada es `feature/pipeline-cicd-evaluacion`. El PR [#7](https://githu
 | Construcción Docker y Trivy de imagen | Éxito; imagen construida y escaneo HIGH/CRITICAL completado. |
 | Despliegue simulado | Éxito; Compose desplegó en el runner, guardó estado/logs, publicó artefactos de evidencia y detuvo el entorno temporal. Los smoke tests completaron correctamente. |
 
-El comentario de SonarCloud en el [PR #7](https://github.com/gladys3112/pagos-svc/pull/7) confirma Quality Gate aprobado, 0 incidencias nuevas y 0 hotspots nuevos. El mismo comentario reporta **3 riesgos de dependencias nuevas**; conviene inspeccionarlos en el [panel de riesgos de SonarCloud](https://sonarcloud.io/dependency-risks?id=gladys3112_pagos-svc&pullRequest=7). El Quality Gate aprobado no significa que esos avisos de dependencias deban ignorarse.
+El comentario de SonarCloud en el [PR #7](https://github.com/gladys3112/pagos-svc/pull/7) confirma Quality Gate aprobado, 0 incidencias nuevas y 0 hotspots nuevos. El mismo comentario reporta **3 riesgos de dependencias nuevas**. Intenté consultar el informe de detalle SCA desde CI y la API devolvió HTTP 403; esto no afectó el análisis ni el Quality Gate. No cambié versiones a ciegas: hay que revisar nombre, versión, severidad y recomendación de corrección en el [panel de riesgos de SonarCloud](https://sonarcloud.io/dependency-risks?id=gladys3112_pagos-svc&pullRequest=7), y después volver a ejecutar el análisis para confirmar que se resolvieron.
 
 ## Correcciones verificadas en el workflow
 
@@ -37,10 +37,10 @@ El comentario de SonarCloud en el [PR #7](https://github.com/gladys3112/pagos-sv
 
 ## Correspondencia con la pauta
 
-- **IE1 — contenedores:** construcción y análisis de vulnerabilidades de la imagen pasaron en #137.
-- **IE2 — pruebas:** Maven y cobertura JaCoCo pasaron en #137.
-- **IE3 — seguridad:** Trivy de repositorio, consulta Dependabot y Quality Gate SonarCloud pasaron en #137. Snyk se omitió por estar deshabilitado; SonarCloud reporta 3 riesgos de dependencias nuevas que requieren revisión.
-- **IE4 — despliegue trazable:** despliegue Compose temporal, smoke tests, artefactos de estado/logs y limpieza pasaron en #137.
-- **IE5 — orquestación:** el despliegue Compose y sus comprobaciones de salud/dependencias pasaron en #137.
+- **IE1 — contenedores:** construcción y análisis de vulnerabilidades de la imagen pasaron en #146.
+- **IE2 — pruebas:** Maven y cobertura JaCoCo pasaron en #146.
+- **IE3 — seguridad:** Trivy de repositorio, consulta Dependabot y Quality Gate SonarCloud pasaron en #146. Snyk se omitió por estar deshabilitado; SonarCloud reporta 3 riesgos de dependencias nuevas que requieren revisión.
+- **IE4 — despliegue trazable:** despliegue Compose temporal, smoke tests, artefactos de estado/logs y limpieza pasaron en #146.
+- **IE5 — orquestación:** el despliegue Compose y sus comprobaciones de salud/dependencias pasaron en #146.
 
 No se afirma que Snyk haya pasado ni que el despliegue sea permanente.
