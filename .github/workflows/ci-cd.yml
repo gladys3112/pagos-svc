@@ -182,6 +182,7 @@ jobs:
   deploy-simulated:
     name: Despliegue simulado y smoke tests
     needs: [build-and-scan]
+    if: ${{ always() && needs.build-and-scan.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
