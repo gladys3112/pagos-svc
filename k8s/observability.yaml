@@ -111,6 +111,8 @@ spec:
           ports:
             - containerPort: 9090
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             - name: config
               mountPath: /etc/prometheus
           resources:
@@ -121,6 +123,8 @@ spec:
               cpu: 500m
               memory: 512Mi
       volumes:
+        - name: tmp
+          emptyDir: {}
         - name: config
           configMap:
             name: prometheus-config
