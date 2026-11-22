@@ -1,0 +1,126 @@
+name: EP3 - Observabilidad y Kubernetes
+
+on:
+  push:
+    branches: ["feature/ep3-observabilidad-kubernetes"]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      simulate_critical_failure:
+        description: "Provocar falla crítica controlada para demostrar que el despliegue queda bloqueado"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ep3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Pruebas y cobertura
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Verificar aplicación y cobertura
+        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+
+  build:
+    name: Construcción y escaneo de imagen
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagen
+        run: docker build --tag pagos-svc:ep3 .
+      - name: Escanear imagen con Trivy
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: pagos-svc:ep3
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Guardar imagen para Kubernetes
+        run: docker save pagos-svc:ep3 -o pagos-svc-ep3.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pagos-svc-image
+          path: pagos-svc-ep3.tar
+          retention-days: 1
+
+  critical-failure-demo:
+    name: Demostración de falla crítica IE6
+    needs: [build]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.simulate_critical_failure }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inyectar falla crítica controlada
+        run: |
+          echo "::error title=Falla crítica simulada::La verificación crítica detectó una condición insegura."
+          echo "El pipeline debe detenerse y no autorizar Kubernetes."
+          exit 1
+
+  kubernetes:
+    name: Despliegue y verificación en Kubernetes
+    needs: [build, critical-failure-demo]
+    if: ${{ always() && needs.build.result == 'success' && (needs.critical-failure-demo.result == 'success' || needs.critical-failure-demo.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Crear clúster Kubernetes local de CI
+        uses: helm/kind-action@v1.12.0
+        with:
+          cluster_name: pagos-ep3
+      - name: Descargar imagen construida
+        uses: actions/download-artifact@v4
+        with:
+          name: pagos-svc-image
+      - name: Cargar imagen en kind
+        run: |
+          docker load -i pagos-svc-ep3.tar
+          kind load docker-image pagos-svc:ep3 --name pagos-ep3
+      - name: Validar manifiestos
+        run: kubectl apply --dry-run=client -f k8s/observability.yaml
+      - name: Desplegar aplicación y observabilidad
+        run: kubectl apply -f k8s/observability.yaml
+      - name: Esperar disponibilidad de los componentes
+        run: |
+          kubectl rollout status deployment/pagos-svc -n pagos-observability --timeout=180s
+          kubectl rollout status deployment/prometheus -n pagos-observability --timeout=180s
+          kubectl rollout status deployment/grafana -n pagos-observability --timeout=180s
+      - name: Verificar salud y endpoint Prometheus
+        run: |
+          kubectl port-forward -n pagos-observability service/pagos-svc 18080:8080 > /tmp/pagos-port-forward.log 2>&1 &
+          PF_PID=$!
+          trap 'kill "$PF_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/actuator/health > /dev/null; then break; fi
+            sleep 3
+          done
+          curl --fail --show-error http://127.0.0.1:18080/actuator/health
+          curl --fail --silent --show-error http://127.0.0.1:18080/actuator/prometheus | grep -m 1 'http_server_requests_seconds'
+      - name: Guardar evidencias Kubernetes
+        if: always()
+        run: |
+          kubectl get all -n pagos-observability -o wide > kubernetes-resources.txt 2>&1 || true
+          kubectl get events -n pagos-observability --sort-by=.lastTimestamp > kubernetes-events.txt 2>&1 || true
+          kubectl describe pods -n pagos-observability > kubernetes-pods.txt 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidencias-kubernetes
+          path: |
+            kubernetes-resources.txt
+            kubernetes-events.txt
+            kubernetes-pods.txt
+          retention-days: 14
