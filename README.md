@@ -220,6 +220,10 @@ En **Settings → Code security and analysis**, habilita Dependabot Alerts y el 
 
 El despliegue del workflow es temporal en el runner de GitHub Actions; no es una publicación permanente en AWS, Azure ni otro proveedor cloud. Los resultados anteriores pertenecen a una versión previa del workflow y no sustituyen la validación del commit actual.
 
+## EP3 — Observabilidad y Kubernetes
+
+La extensión de EP3 está documentada en [docs/EP3_OBSERVABILIDAD.md](docs/EP3_OBSERVABILIDAD.md). Incluye Actuator/Micrometer, Prometheus, dashboard Grafana de cuatro métricas, manifiestos Kubernetes y un workflow separado con demostración controlada de falla crítica. EP3 amplía EP2 y mantiene su pipeline original.
+
 ## Declaración de uso de inteligencia artificial
 
 Se utilizó ChatGPT para revisar el pipeline CI/CD y los resultados de GitHub Actions, analizar el error de SonarCloud, proponer y aplicar una configuración para usar el Java 21 del runner, contrastar el proyecto con la pauta y actualizar la documentación técnica. La estudiante debe revisar y validar esos cambios antes de entregar. ChatGPT no redactó ni modificó la reflexión personal ni la justificación personal.

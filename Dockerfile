@@ -13,7 +13,7 @@ RUN apk add --no-cache wget \
     && addgroup -S spring \
     && adduser -S -G spring -h /app spring
 COPY --from=build --chown=spring:spring /app/target/pagos-svc-1.0.0.jar /app/app.jar
-USER spring:spring
+USER 100:100
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
   CMD wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1
